@@ -9,14 +9,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ================= TEST ROUTE =================
+// ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
-  res.send("✅ CorporateMart Backend Running");
+  res.json({
+    status: "OK",
+    message: "✅ CorporateMart Backend Running on Railway",
+  });
 });
 
 // ================= ROUTES =================
-// ⚠️ IMPORTANT: sab routes Express Router export kar rahe hone chahiye
-
 const orderRoutes = require("./routes/orderRoutes");
 const adminAuthRoutes = require("./routes/adminAuth");
 const adminOrderRoutes = require("./routes/adminOrders");
@@ -25,14 +26,18 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin", adminOrderRoutes);
 
-// ================= DATABASE =================
+// ================= DATABASE + SERVER =================
+const PORT = process.env.PORT || 8080;
+
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ Mongo Error:", err));
+  .then(() => {
+    console.log("✅ MongoDB Connected");
 
-// ================= SERVER =================
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err.message);
+  });

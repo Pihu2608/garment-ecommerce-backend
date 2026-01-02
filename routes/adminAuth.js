@@ -1,37 +1,31 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const Admin = require("../models/Admin");
 
 const router = express.Router();
 
-// ADMIN LOGIN
-router.post("/login", async (req, res) => {
-  try {
-    const { username, password } = req.body;
+router.post("/login", (req, res) => {
+  const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ username });
-    if (!admin) {
-      return res.status(401).json({ success: false, message: "Invalid username" });
-    }
+  // ✅ SAFE ENV READ (trim added)
+  const envEmail = process.env.ADMIN_EMAIL?.trim();
+  const envPassword = process.env.ADMIN_PASSWORD?.trim();
 
-    if (admin.password !== password) {
-      return res.status(401).json({ success: false, message: "Invalid password" });
-    }
+  // DEBUG LOGS (temporary – test ke baad hata sakte ho)
+  console.log("LOGIN TRY:", email, password);
+  console.log("ENV EMAIL:", envEmail);
+  console.log("ENV PASSWORD:", envPassword);
 
-    const token = jwt.sign(
-      { adminId: admin._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    res.json({
-      success: true,
-      token,
-      admin: { username: admin.username }
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+  if (email !== envEmail || password !== envPassword) {
+    return res.status(401).json({ message: "Invalid credentials" });
   }
+
+  const token = jwt.sign(
+    { role: "admin", email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  res.json({ token });
 });
 
 module.exports = router;

@@ -1,17 +1,23 @@
 // utils/gstUtils.js
 
-function calculateGST(total, rate = 12) {
-  const gstAmount = (total * rate) / 100;
-  const half = gstAmount / 2;
+/**
+ * Calculate GST for a given amount
+ * @param {number} amount - Base amount (qty * price)
+ * @param {number} rate - GST rate (default 18%)
+ * @returns {object} GST breakup
+ */
+function calculateGST(amount, rate = 18) {
+  const safeAmount = Number(amount) || 0;
+  const safeRate = Number(rate) || 0;
+
+  const gstAmount = (safeAmount * safeRate) / 100;
 
   return {
-    taxable: total,
-    gstRate: rate,
-    cgst: half,
-    sgst: half,
-    igst: 0,
-    totalWithGST: total + gstAmount,
+    gstRate: safeRate,                    // e.g. 18
+    gstAmount: Number(gstAmount.toFixed(2)),
+    cgst: Number((gstAmount / 2).toFixed(2)),
+    sgst: Number((gstAmount / 2).toFixed(2)),
   };
 }
 
-module.exports = calculateGST;
+module.exports = { calculateGST };

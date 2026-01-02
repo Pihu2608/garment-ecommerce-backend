@@ -34,7 +34,7 @@ router.get("/track", async (req, res) => {
 
     const order = await Order.findOne({
       _id: orderId,
-      phone: phone,
+      phone,
     });
 
     if (!order) {
@@ -112,11 +112,13 @@ router.get("/:id/invoice", async (req, res) => {
     }
 
     const filePath = await generateInvoice(order);
-    res.download(filePath);
+
+    // ✅ Railway-safe
+    res.sendFile(filePath);
   } catch (err) {
-    res.status(500).json({ message: "Invoice error" });
+    console.error("Invoice error:", err);
+    res.status(500).json({ message: "Invoice generation failed" });
   }
 });
-
 
 module.exports = router;

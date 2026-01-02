@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const adminAuth = require("../middleware/adminAuth");
+const generateInvoice = require("../utils/invoiceGenerator");
 
 // ===============================
 // CREATE ORDER (PUBLIC)
@@ -98,5 +99,24 @@ router.put("/:id/status", adminAuth, async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// ===============================
+// DOWNLOAD INVOICE PDF (PUBLIC)
+// ===============================
+router.get("/:id/invoice", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const filePath = await generateInvoice(order);
+    res.download(filePath);
+  } catch (err) {
+    res.status(500).json({ message: "Invoice error" });
+  }
+});
+
 
 module.exports = router;

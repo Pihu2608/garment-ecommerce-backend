@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-function adminAuth(req, res, next) {
+module.exports = function (req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -11,11 +11,9 @@ function adminAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.admin = decoded;
+    req.adminId = decoded.adminId;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });
   }
-}
-
-module.exports = adminAuth;
+};

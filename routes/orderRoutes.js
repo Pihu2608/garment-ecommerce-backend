@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
+const adminAuth = require("../middleware/adminAuth");
 
-// ================= CREATE ORDER =================
+// ===============================
+// CREATE ORDER (PUBLIC)
+// ===============================
 router.post("/", async (req, res) => {
   try {
     const order = new Order(req.body);
@@ -13,8 +16,10 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ================= GET ALL ORDERS (ADMIN) =================
-router.get("/", async (req, res) => {
+// ===============================
+// GET ALL ORDERS (ADMIN - PROTECTED)
+// ===============================
+router.get("/", adminAuth, async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
@@ -23,8 +28,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ================= UPDATE ORDER STATUS (ADMIN) =================
-router.put("/:id/status", async (req, res) => {
+// ===============================
+// UPDATE ORDER STATUS (ADMIN - PROTECTED)
+// ===============================
+router.put("/:id/status", adminAuth, async (req, res) => {
   try {
     const { status } = req.body;
 
@@ -35,14 +42,12 @@ router.put("/:id/status", async (req, res) => {
     );
 
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Order not found" });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
     res.json({ success: true, order });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

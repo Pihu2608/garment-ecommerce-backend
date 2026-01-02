@@ -31,7 +31,11 @@ mongoose
   });
 
 // ================= SERVER =================
-const PORT = process.env.PORT || 5000;
+// ⚠️ IMPORTANT:
+// - Railway gives its own PORT (process.env.PORT)
+// - Local fallback = 3000 (NOT 5000)
+
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

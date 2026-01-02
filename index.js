@@ -1,3 +1,5 @@
+// backend/index.js
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -6,47 +8,31 @@ require("dotenv").config();
 const app = express();
 
 // ================= MIDDLEWARE =================
-
-// ✅ CORS — Admin panel + Railway + Local sab allow
-app.use(
-  cors({
-    origin: "*", // abhi ke liye open (production me restrict kar sakte hain)
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
+app.use(cors());
 app.use(express.json());
 
-// ================= HEALTH CHECK =================
+// ================= TEST ROUTE =================
 app.get("/", (req, res) => {
-  res.json({
-    status: "OK",
-    message: "✅ CorporateMart Backend Running on Railway",
-  });
+  res.send("✅ Garment Ecommerce Backend Running");
 });
 
 // ================= ROUTES =================
 const orderRoutes = require("./routes/orderRoutes");
-const adminAuthRoutes = require("./routes/adminAuth");
-const adminOrderRoutes = require("./routes/adminOrders");
-
 app.use("/api/orders", orderRoutes);
-app.use("/api/admin/auth", adminAuthRoutes);
-app.use("/api/admin", adminOrderRoutes);
 
-// ================= DATABASE + SERVER =================
-const PORT = process.env.PORT || 8080;
-
+// ================= DATABASE =================
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB Connected");
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
   })
   .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err.message);
+    console.error("❌ MongoDB Error:", err);
   });
+
+// ================= SERVER =================
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

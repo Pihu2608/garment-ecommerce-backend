@@ -1,63 +1,51 @@
 const mongoose = require("mongoose");
 
-const orderSchema = new mongoose.Schema({
-  // 🏢 Company Details
-  companyName: {
-    type: String,
-    required: true
-  },
-  gstNumber: {
-    type: String
-  },
-  contactName: {
-    type: String,
-    required: true
-  },
-  mobile: {
-    type: String,
-    required: true
-  },
-  address: {
-    type: String,
-    required: true
-  },
+const orderSchema = new mongoose.Schema(
+  {
+    companyName: {
+      type: String,
+      required: true,
+    },
 
-  // 📦 Order Items
-  items: [
-    {
-      id: String,
-      name: String,
-      price: Number,
-      qty: Number
-    }
-  ],
+    phone: {
+      type: String,
+      required: true,
+    },
 
-  // 💰 Amounts
-  subtotal: Number,
-  cgst: Number,
-  sgst: Number,
-  total: {
-    type: Number,
-    required: true
-  },
+    status: {
+      type: String,
+      default: "Pending",
+    },
 
-  // 🚚 Order Status (UPGRADE 9)
-  status: {
-    type: String,
-    enum: [
-      "Order Received",
-      "Processing",
-      "Shipped",
-      "Delivered"
+    items: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        qty: {
+          type: Number,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+
+        // ✅ YAHI HSN ADD KARNA HAI
+        hsn: {
+          type: String,
+          default: "6109", // garments default HSN
+        },
+      },
     ],
-    default: "Order Received"
-  },
 
-  // 🕒 Timestamps
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+    total: {
+      type: Number,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Order", orderSchema);

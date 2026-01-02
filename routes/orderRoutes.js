@@ -13,38 +13,29 @@ router.post("/", async (req, res) => {
     await order.save();
     res.json({ success: true, order });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // ===============================
-// TRACK ORDER (CUSTOMER - PUBLIC)
-// GET /api/orders/track?orderId=xxx&phone=9999999999
+// TRACK ORDER (PUBLIC)
 // ===============================
 router.get("/track", async (req, res) => {
   try {
     const { orderId, phone } = req.query;
 
     if (!orderId || !phone) {
-      return res.status(400).json({
-        success: false,
-        message: "Order ID and phone required",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Order ID and phone required" });
     }
 
-    const order = await Order.findOne({
-      _id: orderId,
-      phone: phone,
-    });
+    const order = await Order.findOne({ _id: orderId, phone });
 
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
     res.json({
@@ -58,30 +49,24 @@ router.get("/track", async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Invalid Order ID",
-    });
+    res.status(500).json({ success: false, message: "Invalid Order ID" });
   }
 });
 
 // ===============================
-// GET ALL ORDERS (ADMIN - PROTECTED)
+// GET ALL ORDERS (ADMIN)
 // ===============================
 router.get("/", adminAuth, async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // ===============================
-// UPDATE ORDER STATUS (ADMIN - PROTECTED)
+// UPDATE ORDER STATUS (ADMIN)
 // ===============================
 router.put("/:id/status", adminAuth, async (req, res) => {
   try {
@@ -94,48 +79,40 @@ router.put("/:id/status", adminAuth, async (req, res) => {
     );
 
     if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
-    res.json({
-      success: true,
-      order,
-    });
+    res.json({ success: true, order });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // ===============================
 // DOWNLOAD INVOICE PDF (PUBLIC)
-// RAILWAY SAFE — STREAM PDF
+// RAILWAY SAFE
 // ===============================
 router.get("/:id/invoice", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
 
     if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
+      return res.status(404).json({ message: "Order not found" });
     }
 
-    // 🔥 IMPORTANT:
-    // - NO fs
-    // - NO res.sendFile
-    // - Direct PDF stream to response
-    await generateInvoice(order, res);
-  } catch (err) {
-    console.error("Invoice error:", err);
-    res.status(500).json({
-      message: "Invoice generation failed",
+    const pdfBuffer = await generateInvoice(order);
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `inline; filename=invoice-${order._id}.pdf`,
     });
+
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("Invoice Error:", err);
+    res.status(500).json({ message: "Invoice generation failed" });
   }
 });
 

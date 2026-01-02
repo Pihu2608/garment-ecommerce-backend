@@ -6,7 +6,16 @@ require("dotenv").config();
 const app = express();
 
 // ================= MIDDLEWARE =================
-app.use(cors());
+
+// ✅ CORS — Admin panel + Railway + Local sab allow
+app.use(
+  cors({
+    origin: "*", // abhi ke liye open (production me restrict kar sakte hain)
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
 // ================= HEALTH CHECK =================

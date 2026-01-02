@@ -13,7 +13,10 @@ router.post("/", async (req, res) => {
     await order.save();
     res.json({ success: true, order });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
@@ -34,7 +37,7 @@ router.get("/track", async (req, res) => {
 
     const order = await Order.findOne({
       _id: orderId,
-      phone,
+      phone: phone,
     });
 
     if (!order) {
@@ -70,7 +73,10 @@ router.get("/", adminAuth, async (req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
@@ -94,9 +100,15 @@ router.put("/:id/status", adminAuth, async (req, res) => {
       });
     }
 
-    res.json({ success: true, order });
+    res.json({
+      success: true,
+      order,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
@@ -109,14 +121,21 @@ router.get("/:id/invoice", async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res.status(404).json({
+        message: "Order not found",
+      });
     }
 
-    // ✅ NO filesystem, NO sendFile
+    // 🔥 IMPORTANT:
+    // - NO fs
+    // - NO res.sendFile
+    // - Direct PDF stream to response
     await generateInvoice(order, res);
   } catch (err) {
     console.error("Invoice error:", err);
-    res.status(500).json({ message: "Invoice generation failed" });
+    res.status(500).json({
+      message: "Invoice generation failed",
+    });
   }
 });
 

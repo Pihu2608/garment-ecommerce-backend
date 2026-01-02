@@ -17,6 +17,39 @@ router.post("/", async (req, res) => {
 });
 
 // ===============================
+// TRACK ORDER (CUSTOMER - PUBLIC)
+// ===============================
+// GET /api/orders/track?orderId=xxx&phone=9999999999
+router.get("/track", async (req, res) => {
+  const { orderId, phone } = req.query;
+
+  if (!orderId || !phone) {
+    return res.status(400).json({ message: "Missing orderId or phone" });
+  }
+
+  try {
+    const order = await Order.findOne({
+      _id: orderId,
+      phone: phone
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({
+      orderId: order._id,
+      status: order.status,
+      companyName: order.companyName,
+      total: order.total,
+      createdAt: order.createdAt
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Invalid Order ID" });
+  }
+});
+
+// ===============================
 // GET ALL ORDERS (ADMIN - PROTECTED)
 // ===============================
 router.get("/", adminAuth, async (req, res) => {
@@ -42,7 +75,10 @@ router.put("/:id/status", adminAuth, async (req, res) => {
     );
 
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
     }
 
     res.json({ success: true, order });

@@ -18,37 +18,103 @@ module.exports = function generateInvoice(order) {
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
 
+    // ===============================
     // HEADER
+    // ===============================
     doc
       .fontSize(20)
-      .text("CorporateMart Invoice", { align: "center" })
-      .moveDown();
+      .text("TAX INVOICE", { align: "center" })
+      .moveDown(0.5);
 
-    // COMPANY INFO
     doc
       .fontSize(12)
-      .text(`Order ID: ${order._id}`)
-      .text(`Company: ${order.companyName}`)
-      .text(`Phone: ${order.phone}`)
-      .text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`)
+      .text("CorporateMart", { align: "center" })
+      .text("GSTIN: 23ABCDE1234F1Z5", { align: "center" }) // 🔴 replace GSTIN
       .moveDown();
 
-    // ITEMS
-    doc.text("Items:", { underline: true });
+    // ===============================
+    // ORDER DETAILS
+    // ===============================
+    doc
+      .fontSize(11)
+      .text(`Invoice No: CM-${order._id}`)
+      .text(`Order ID: ${order._id}`)
+      .text(`Invoice Date: ${new Date(order.createdAt).toLocaleDateString()}`)
+      .moveDown();
+
+    doc
+      .text(`Billed To: ${order.companyName}`)
+      .text(`Phone: ${order.phone}`)
+      .moveDown();
+
+    // ===============================
+    // ITEMS TABLE
+    // ===============================
+    doc.fontSize(12).text("Items", { underline: true });
+    doc.moveDown(0.5);
+
     order.items.forEach(item => {
-      doc.text(
-        `${item.name}  x${item.qty}  ₹${item.price * item.qty}`
-      );
+      doc
+        .fontSize(10)
+        .text(
+          `${item.name}  |  Qty: ${item.qty}  |  Rate: ₹${item.price}  |  Amount: ₹${item.price * item.qty}`
+        );
     });
 
     doc.moveDown();
 
-    // TOTAL
+    // ===============================
+    // GST CALCULATION
+    // ===============================
+    const subtotal = order.subtotal || order.total;
+    const gstRate = 18;
+
+    let cgst = order.cgst;
+    let sgst = order.sgst;
+    let igst = order.igst || 0;
+
+    // Auto calculate if not present
+    if (!cgst && !sgst && !igst) {
+      const gstAmount = (subtotal * gstRate) / 100;
+      cgst = gstAmount / 2;
+      sgst = gstAmount / 2;
+    }
+
+    const grandTotal = subtotal + cgst + sgst + igst;
+
+    // ===============================
+    // TOTALS
+    // ===============================
+    doc.moveDown();
+    doc.fontSize(11);
+
+    doc.text(`Subtotal: ₹${subtotal.toFixed(2)}`, { align: "right" });
+
+    if (igst > 0) {
+      doc.text(`IGST (18%): ₹${igst.toFixed(2)}`, { align: "right" });
+    } else {
+      doc.text(`CGST (9%): ₹${cgst.toFixed(2)}`, { align: "right" });
+      doc.text(`SGST (9%): ₹${sgst.toFixed(2)}`, { align: "right" });
+    }
+
     doc
-      .fontSize(14)
-      .text(`Total Amount: ₹${order.total}`, {
+      .fontSize(13)
+      .text(`Grand Total: ₹${grandTotal.toFixed(2)}`, {
         align: "right",
+        underline: true,
       });
+
+    doc.moveDown(2);
+
+    // ===============================
+    // FOOTER
+    // ===============================
+    doc
+      .fontSize(10)
+      .text(
+        "This is a computer-generated invoice and does not require a signature.",
+        { align: "center" }
+      );
 
     doc.end();
 

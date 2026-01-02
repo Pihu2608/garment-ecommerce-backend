@@ -102,6 +102,7 @@ router.put("/:id/status", adminAuth, async (req, res) => {
 
 // ===============================
 // DOWNLOAD INVOICE PDF (PUBLIC)
+// RAILWAY SAFE — STREAM PDF
 // ===============================
 router.get("/:id/invoice", async (req, res) => {
   try {
@@ -111,10 +112,8 @@ router.get("/:id/invoice", async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const filePath = await generateInvoice(order);
-
-    // ✅ Railway-safe
-    res.sendFile(filePath);
+    // ✅ NO filesystem, NO sendFile
+    await generateInvoice(order, res);
   } catch (err) {
     console.error("Invoice error:", err);
     res.status(500).json({ message: "Invoice generation failed" });

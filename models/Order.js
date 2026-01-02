@@ -8,29 +8,46 @@ const orderSchema = new mongoose.Schema(
     companyName: {
       type: String,
       required: true,
+      trim: true,
     },
 
     phone: {
       type: String,
       required: true,
+      trim: true,
     },
 
     status: {
       type: String,
-      default: "Pending",
+      default: "Pending", // Pending | Processing | Delivered
     },
 
     // ===============================
-    // GST DETAILS (TOP LEVEL)
+    // INVOICE DETAILS
+    // ===============================
+    invoiceNumber: {
+      type: String,
+      unique: true,
+      sparse: true, // existing orders safe
+    },
+
+    // 🔥 INVOICE FINAL FLAG
+    isInvoiceFinal: {
+      type: Boolean,
+      default: false, // Delivered hone par true
+    },
+
+    // ===============================
+    // GST DETAILS (SELLER)
     // ===============================
     gstin: {
       type: String,
-      default: "23ABCDE1234F1Z5", // demo GSTIN (MP)
+      default: "23ABCDE1234F1Z5", // Demo GSTIN (MP)
     },
 
     state: {
       type: String,
-      default: "MP", // intra-state → CGST + SGST
+      default: "MP", // Intra-state → CGST + SGST
     },
 
     // ===============================
@@ -46,17 +63,19 @@ const orderSchema = new mongoose.Schema(
         qty: {
           type: Number,
           required: true,
+          min: 1,
         },
 
         price: {
           type: Number,
           required: true,
+          min: 0,
         },
 
         // ✅ HSN CODE (GARMENTS)
         hsn: {
           type: String,
-          default: "6109", // Garments HSN
+          default: "6109",
         },
 
         // ✅ GST RATE PER ITEM
@@ -73,9 +92,12 @@ const orderSchema = new mongoose.Schema(
     total: {
       type: Number,
       required: true,
+      min: 0,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 module.exports = mongoose.model("Order", orderSchema);

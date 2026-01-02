@@ -3,29 +3,46 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
+/**
+ * ADMIN LOGIN (ENV BASED - SIMPLE & SAFE)
+ * POST /api/admin/auth/login
+ */
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  // ✅ SAFE ENV READ (trim added)
-  const envEmail = process.env.ADMIN_EMAIL?.trim();
-  const envPassword = process.env.ADMIN_PASSWORD?.trim();
+    // Basic validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required" });
+    }
 
-  // DEBUG LOGS (temporary – test ke baad hata sakte ho)
-  console.log("LOGIN TRY:", email, password);
-  console.log("ENV EMAIL:", envEmail);
-  console.log("ENV PASSWORD:", envPassword);
+    // Read from ENV (trim to avoid hidden space issues)
+    const envEmail = process.env.ADMIN_EMAIL?.trim();
+    const envPassword = process.env.ADMIN_PASSWORD?.trim();
 
-  if (email !== envEmail || password !== envPassword) {
-    return res.status(401).json({ message: "Invalid credentials" });
+    if (!envEmail || !envPassword) {
+      console.error("❌ ADMIN ENV NOT SET");
+      return res.status(500).json({ message: "Server configuration error" });
+    }
+
+    // Credential check
+    if (email.trim() !== envEmail || password.trim() !== envPassword) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { role: "admin", email: envEmail },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // Success
+    res.json({ token });
+  } catch (err) {
+    console.error("❌ ADMIN LOGIN ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
-
-  const token = jwt.sign(
-    { role: "admin", email },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  );
-
-  res.json({ token });
 });
 
 module.exports = router;

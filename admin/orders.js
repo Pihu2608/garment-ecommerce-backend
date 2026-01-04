@@ -1,108 +1,73 @@
-// ===============================
-// 🔐 ADMIN AUTH GUARD
-// ===============================
-const token = localStorage.getItem("adminToken");
-if (!token) {
-  window.location.href = "/admin/login.html";
-}
+const API_BASE =
+  "https://garment-ecommerce-backend-production.up.railway.app";
+
+const tableBody = document.querySelector("#ordersTable tbody");
 
 // ===============================
-// API BASE URL (AUTO)
-// ===============================
-const API_BASE = location.origin;
-
-// ===============================
-// LOAD ALL ORDERS
+// LOAD ORDERS
 // ===============================
 async function loadOrders() {
-  try {
-    const res = await fetch(`${API_BASE}/api/admin/orders`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token,
-      },
-    });
+  const res = await fetch(`${API_BASE}/api/admin/orders`);
+  const orders = await res.json();
 
-    const orders = await res.json();
-    const tbody = document.querySelector("#ordersTable tbody");
-    tbody.innerHTML = "";
+  tableBody.innerHTML = "";
 
-    orders.forEach((order) => {
-      const tr = document.createElement("tr");
+  orders.forEach((order) => {
+    const tr = document.createElement("tr");
 
-      const locked = order.isInvoiceFinal === true;
+    const locked = order.isInvoiceFinal === true;
 
-      tr.innerHTML = `
-        <td>${order.companyName}</td>
-        <td>${order.phone}</td>
-        <td>₹ ${order.total}</td>
+    tr.innerHTML = `
+      <td>${order.companyName}</td>
+      <td>${order.phone}</td>
+      <td>₹ ${order.total}</td>
+      <td>
+        <select ${locked ? "disabled" : ""}>
+          <option ${order.status === "Pending" ? "selected" : ""}>Pending</option>
+          <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+          <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+          <option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
+        </select>
+        ${locked ? "<br><small style='color:red'>🔒 Invoice Final</small>" : ""}
+      </td>
+      <td>
+        ${
+          locked
+            ? "<button disabled>Locked</button>"
+            : `<button onclick="updateStatus('${order._id}', this)">Update</button>`
+        }
+      </td>
+    `;
 
-        <td>
-          <select ${locked ? "disabled" : ""} id="status-${order._id}">
-            <option ${order.status === "Pending" ? "selected" : ""}>Pending</option>
-            <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
-            <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
-            <option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
-          </select>
-          ${
-            locked
-              ? `<div style="color:red;font-size:12px;margin-top:4px;">🔒 Invoice Final</div>`
-              : ""
-          }
-        </td>
-
-        <td>
-          ${
-            locked
-              ? `<button disabled style="opacity:0.6">Locked</button>`
-              : `<button onclick="updateStatus('${order._id}')">Update</button>`
-          }
-        </td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    alert("Failed to load orders");
-    console.error(err);
-  }
+    tableBody.appendChild(tr);
+  });
 }
 
 // ===============================
-// UPDATE ORDER STATUS
+// UPDATE STATUS
 // ===============================
-async function updateStatus(orderId) {
-  const status = document.getElementById(`status-${orderId}`).value;
+async function updateStatus(orderId, btn) {
+  const row = btn.closest("tr");
+  const status = row.querySelector("select").value;
 
-  try {
-    const res = await fetch(
-      `${API_BASE}/api/admin/orders/${orderId}/status`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token,
-        },
-        body: JSON.stringify({ status }),
-      }
-    );
+  btn.innerText = "Updating...";
+  btn.disabled = true;
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || "Status update failed");
-      return;
+  const res = await fetch(
+    `${API_BASE}/api/admin/orders/${orderId}/status`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
     }
+  );
 
-    alert("✅ Status updated successfully");
-    loadOrders(); // reload table
-  } catch (err) {
-    alert("Server error");
-    console.error(err);
-  }
+  const data = await res.json();
+
+  alert(data.message || "Updated");
+
+  loadOrders();
 }
 
-// ===============================
-// INIT
-// ===============================
+// INITIAL LOAD
 loadOrders();

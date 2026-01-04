@@ -3,25 +3,26 @@ const router = express.Router();
 const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
 
-// ===============================
-// ✅ GET ALL ORDERS (PUBLIC – ADMIN PANEL)
-// ===============================
+/* ===============================
+   GET ALL ORDERS (PUBLIC - ADMIN PANEL)
+   =============================== */
 router.get("/", async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    console.error(err);
+    console.error("Orders error:", err);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
 
-// ===============================
-// ✅ DOWNLOAD INVOICE (PUBLIC)
-// ===============================
+/* ===============================
+   DOWNLOAD INVOICE (PUBLIC)
+   =============================== */
 router.get("/:id/invoice", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
+
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
@@ -35,7 +36,7 @@ router.get("/:id/invoice", async (req, res) => {
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error(err);
+    console.error("Invoice error:", err);
     res.status(500).json({ message: "Invoice generation failed" });
   }
 });

@@ -4,7 +4,8 @@ const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
 
 /* ===============================
-   GET ALL ORDERS (ADMIN PANEL - PUBLIC)
+   GET ALL ORDERS (ADMIN PANEL)
+   NO TOKEN REQUIRED ✅
    =============================== */
 router.get("/", async (req, res) => {
   try {
@@ -22,10 +23,7 @@ router.get("/", async (req, res) => {
 router.get("/:id/invoice", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
     const pdfBuffer = await generateInvoice(order);
 
@@ -36,7 +34,7 @@ router.get("/:id/invoice", async (req, res) => {
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error("Invoice error:", err);
+    console.error(err);
     res.status(500).json({ message: "Invoice generation failed" });
   }
 });

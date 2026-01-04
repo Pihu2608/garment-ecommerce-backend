@@ -1,0 +1,39 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card span {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* COLORS */
+.total { background: #34495e; }
+.pending { background: #f39c12; }
+.processing { background: #2980b9; }
+.delivered { background: #27ae60; }
+.cancelled { background: #c0392b; }
+.revenue { background: #8e44ad; }

@@ -1,41 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
+
 <body>
   <h2>Admin Login</h2>
 
-  <input id="email" placeholder="Email" />
-  <input id="password" type="password" placeholder="Password" />
+  <input
+    id="email"
+    type="email"
+    placeholder="Email"
+    required
+  />
+  <br /><br />
+
+  <input
+    id="password"
+    type="password"
+    placeholder="Password"
+    required
+  />
+  <br /><br />
+
   <button onclick="login()">Login</button>
 
   <script>
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-  const res = await fetch(
-    "https://garment-ecommerce-backend-production.up.railway.app/api/admin/auth/login",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      // 🛑 Basic validation
+      if (!email || !password) {
+        alert("Email and password required");
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          "https://garment-ecommerce-backend-production.up.railway.app/api/admin/auth/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          alert(data.message || "Login failed");
+          return;
+        }
+
+        // ✅ Save token
+        localStorage.setItem("adminToken", data.token);
+
+        // ✅ Redirect to dashboard
+        window.location.href = "/admin/dashboard.html";
+      } catch (err) {
+        alert("Server error. Please try again.");
+        console.error(err);
+      }
     }
-  );
-
-  const data = await res.json();
-
-  if (!data.success) {
-    alert("Login failed");
-    return;
-  }
-
-  localStorage.setItem("adminToken", data.token);
-  window.location.href = "/admin/dashboard.html";
-}
-</script>
-
+  </script>
 </body>
 </html>
-

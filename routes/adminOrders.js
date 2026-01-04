@@ -3,8 +3,26 @@ const router = express.Router();
 const Order = require("../models/Order");
 
 // ===============================
+// GET ALL ORDERS (ADMIN)
+// ===============================
+// URL: GET /api/admin/orders
+router.get("/orders", async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: err.message,
+    });
+  }
+});
+
+// ===============================
 // UPDATE ORDER STATUS (ADMIN)
 // ===============================
+// URL: PUT /api/admin/orders/:id/status
 router.put("/orders/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
@@ -33,7 +51,7 @@ router.put("/orders/:id/status", async (req, res) => {
       });
     }
 
-    // 🚫 Invoice already final → status change block
+    // 🚫 Invoice final hone ke baad status change allow nahi
     if (order.isInvoiceFinal && status !== "Delivered") {
       return res.status(400).json({
         success: false,
@@ -49,7 +67,7 @@ router.put("/orders/:id/status", async (req, res) => {
       order.isInvoiceFinal = true;
     }
 
-    // ❌ Cancelled → invoice never final
+    // ❌ Cancelled → invoice final false
     if (status === "Cancelled") {
       order.isInvoiceFinal = false;
     }

@@ -4,15 +4,14 @@ const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
 
 /* ===============================
-   GET ALL ORDERS (ADMIN – TEMP OPEN)
+   GET ALL ORDERS (ADMIN PANEL)
    =============================== */
 router.get("/", async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    console.error("Load Orders Error:", err);
-    res.status(500).json({ message: "Failed to load orders" });
+    res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
 
@@ -31,12 +30,12 @@ router.get("/:id/invoice", async (req, res) => {
 
     res.set({
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename=invoice-${order.invoiceNumber}.pdf`,
+      "Content-Disposition": `inline; filename=invoice-${order._id}.pdf`,
     });
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error("Invoice Error:", err);
+    console.error(err);
     res.status(500).json({ message: "Invoice generation failed" });
   }
 });

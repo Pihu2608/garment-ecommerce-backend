@@ -6,7 +6,7 @@ const API_BASE =
 const tableBody = document.querySelector("#ordersTable tbody");
 
 // ===============================
-// LOAD ORDERS
+// LOAD ORDERS (WITH INVOICE LOCK)
 // ===============================
 async function loadOrders() {
   try {
@@ -18,12 +18,17 @@ async function loadOrders() {
     orders.forEach((order) => {
       const tr = document.createElement("tr");
 
+      // 🔒 Invoice lock condition
+      const isLocked =
+        order.status === "Delivered" && order.isInvoiceFinal === true;
+
       tr.innerHTML = `
         <td>${order.companyName}</td>
         <td>${order.phone}</td>
         <td>₹ ${order.total}</td>
+
         <td>
-          <select data-id="${order._id}">
+          <select ${isLocked ? "disabled" : ""}>
             ${["Pending", "Processing", "Delivered", "Cancelled"]
               .map(
                 (s) =>
@@ -33,10 +38,21 @@ async function loadOrders() {
               )
               .join("")}
           </select>
+          ${
+            isLocked
+              ? `<div style="font-size:11px;color:red;margin-top:4px;">
+                   🔒 Invoice Final
+                 </div>`
+              : ""
+          }
         </td>
+
         <td>
-          <button onclick="updateStatus('${order._id}', this)">
-            Update
+          <button
+            onclick="updateStatus('${order._id}', this)"
+            ${isLocked ? "disabled" : ""}
+          >
+            ${isLocked ? "Locked" : "Update"}
           </button>
         </td>
       `;
@@ -44,15 +60,16 @@ async function loadOrders() {
       tableBody.appendChild(tr);
     });
   } catch (err) {
-    alert("Failed to load orders");
+    alert("❌ Failed to load orders");
   }
 }
 
 // ===============================
-// UPDATE STATUS
+// UPDATE ORDER STATUS
 // ===============================
 async function updateStatus(orderId, btn) {
-  const select = btn.parentElement.parentElement.querySelector("select");
+  const row = btn.closest("tr");
+  const select = row.querySelector("select");
   const newStatus = select.value;
 
   btn.disabled = true;
@@ -77,11 +94,11 @@ async function updateStatus(orderId, btn) {
     }
 
     alert("✅ Status updated successfully");
+
+    // 🔄 Reload to apply lock if Delivered
+    loadOrders();
   } catch (err) {
     alert("❌ " + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerText = "Update";
   }
 }
 

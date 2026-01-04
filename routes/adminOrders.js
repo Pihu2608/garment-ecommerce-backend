@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
+const adminAuth = require("../middleware/adminAuth");
 
 // 🔥 PROOF LOG — server start hote hi ye print hona chahiye
 console.log("✅ adminOrders routes file LOADED");
 
 // ===============================
-// GET ALL ORDERS (ADMIN)
+// GET ALL ORDERS (ADMIN - PROTECTED)
 // ===============================
 // URL: GET /api/admin/orders
-router.get("/orders", async (req, res) => {
+router.get("/orders", adminAuth, async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
@@ -23,10 +24,10 @@ router.get("/orders", async (req, res) => {
 });
 
 // ===============================
-// UPDATE ORDER STATUS (ADMIN)
+// UPDATE ORDER STATUS (ADMIN - PROTECTED)
 // ===============================
 // URL: PUT /api/admin/orders/:id/status
-router.put("/orders/:id/status", async (req, res) => {
+router.put("/orders/:id/status", adminAuth, async (req, res) => {
   try {
     const { status } = req.body;
 
@@ -60,14 +61,15 @@ router.put("/orders/:id/status", async (req, res) => {
       });
     }
 
+    // 🔄 Status update
     order.status = status;
 
-    // ✅ Delivered → invoice final
+    // ✅ Delivered → invoice final lock
     if (status === "Delivered") {
       order.isInvoiceFinal = true;
     }
 
-    // ❌ Cancelled → invoice final false
+    // ❌ Cancelled → invoice unlock
     if (status === "Cancelled") {
       order.isInvoiceFinal = false;
     }

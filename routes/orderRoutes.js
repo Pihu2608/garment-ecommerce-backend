@@ -3,9 +3,22 @@ const router = express.Router();
 const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
 
-// ===============================
-// DOWNLOAD INVOICE (PUBLIC)
-// ===============================
+/* ===============================
+   GET ALL ORDERS (ADMIN – TEMP OPEN)
+   =============================== */
+router.get("/", async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error("Load Orders Error:", err);
+    res.status(500).json({ message: "Failed to load orders" });
+  }
+});
+
+/* ===============================
+   DOWNLOAD INVOICE (PUBLIC)
+   =============================== */
 router.get("/:id/invoice", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);

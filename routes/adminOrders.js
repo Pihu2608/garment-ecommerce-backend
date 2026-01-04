@@ -3,91 +3,35 @@ const router = express.Router();
 const Order = require("../models/Order");
 const adminAuth = require("../middleware/adminAuth");
 
-// 🔥 PROOF LOG — server start hote hi ye print hona chahiye
 console.log("✅ adminOrders routes file LOADED");
 
-// ===============================
-// GET ALL ORDERS (ADMIN - PROTECTED)
-// ===============================
-// URL: GET /api/admin/orders
+// 🔐 GET ALL ORDERS
 router.get("/orders", adminAuth, async (req, res) => {
-  try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch orders",
-      error: err.message,
-    });
-  }
+  const orders = await Order.find().sort({ createdAt: -1 });
+  res.json(orders);
 });
 
-// ===============================
-// UPDATE ORDER STATUS (ADMIN - PROTECTED)
-// ===============================
-// URL: PUT /api/admin/orders/:id/status
+// 🔐 UPDATE STATUS
 router.put("/orders/:id/status", adminAuth, async (req, res) => {
-  try {
-    const { status } = req.body;
+  const { status } = req.body;
+  const allowed = ["Pending", "Processing", "Delivered", "Cancelled"];
 
-    const allowedStatus = [
-      "Pending",
-      "Processing",
-      "Delivered",
-      "Cancelled",
-    ];
-
-    if (!allowedStatus.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status value",
-      });
-    }
-
-    const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "Order not found",
-      });
-    }
-
-    // 🚫 Invoice final hone ke baad status change allow nahi
-    if (order.isInvoiceFinal && status !== "Delivered") {
-      return res.status(400).json({
-        success: false,
-        message: "Final invoice order cannot be changed",
-      });
-    }
-
-    // 🔄 Status update
-    order.status = status;
-
-    // ✅ Delivered → invoice final lock
-    if (status === "Delivered") {
-      order.isInvoiceFinal = true;
-    }
-
-    // ❌ Cancelled → invoice unlock
-    if (status === "Cancelled") {
-      order.isInvoiceFinal = false;
-    }
-
-    await order.save();
-
-    res.json({
-      success: true,
-      message: "Order status updated successfully",
-      order,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Status update failed",
-      error: err.message,
-    });
+  if (!allowed.includes(status)) {
+    return res.status(400).json({ message: "Invalid status" });
   }
+
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ message: "Order not found" });
+
+  if (order.isInvoiceFinal && status !== "Delivered") {
+    return res.status(400).json({ message: "Invoice already final" });
+  }
+
+  order.status = status;
+  order.isInvoiceFinal = status === "Delivered";
+  await order.save();
+
+  res.json({ success: true, order });
 });
 
 module.exports = router;

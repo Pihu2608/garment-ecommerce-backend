@@ -1,26 +1,36 @@
-const API_BASE =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://garment-ecommerce-backend-production.up.railway.app";
-
-const tableBody = document.querySelector("#ordersTable tbody");
+// ===============================
+// 🔐 ADMIN AUTH GUARD
+// ===============================
+const token = localStorage.getItem("adminToken");
+if (!token) {
+  window.location.href = "/admin/login.html";
+}
 
 // ===============================
-// LOAD ORDERS (WITH INVOICE LOCK)
+// API BASE URL (AUTO)
+// ===============================
+const API_BASE = location.origin;
+
+// ===============================
+// LOAD ALL ORDERS
 // ===============================
 async function loadOrders() {
   try {
-    const res = await fetch(`${API_BASE}/api/admin/orders`);
-    const orders = await res.json();
+    const res = await fetch(`${API_BASE}/api/admin/orders`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token,
+      },
+    });
 
-    tableBody.innerHTML = "";
+    const orders = await res.json();
+    const tbody = document.querySelector("#ordersTable tbody");
+    tbody.innerHTML = "";
 
     orders.forEach((order) => {
       const tr = document.createElement("tr");
 
-      // 🔒 Invoice lock condition
-      const isLocked =
-        order.status === "Delivered" && order.isInvoiceFinal === true;
+      const locked = order.isInvoiceFinal === true;
 
       tr.innerHTML = `
         <td>${order.companyName}</td>
@@ -28,52 +38,41 @@ async function loadOrders() {
         <td>₹ ${order.total}</td>
 
         <td>
-          <select ${isLocked ? "disabled" : ""}>
-            ${["Pending", "Processing", "Delivered", "Cancelled"]
-              .map(
-                (s) =>
-                  `<option value="${s}" ${
-                    s === order.status ? "selected" : ""
-                  }>${s}</option>`
-              )
-              .join("")}
+          <select ${locked ? "disabled" : ""} id="status-${order._id}">
+            <option ${order.status === "Pending" ? "selected" : ""}>Pending</option>
+            <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+            <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+            <option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
           </select>
           ${
-            isLocked
-              ? `<div style="font-size:11px;color:red;margin-top:4px;">
-                   🔒 Invoice Final
-                 </div>`
+            locked
+              ? `<div style="color:red;font-size:12px;margin-top:4px;">🔒 Invoice Final</div>`
               : ""
           }
         </td>
 
         <td>
-          <button
-            onclick="updateStatus('${order._id}', this)"
-            ${isLocked ? "disabled" : ""}
-          >
-            ${isLocked ? "Locked" : "Update"}
-          </button>
+          ${
+            locked
+              ? `<button disabled style="opacity:0.6">Locked</button>`
+              : `<button onclick="updateStatus('${order._id}')">Update</button>`
+          }
         </td>
       `;
 
-      tableBody.appendChild(tr);
+      tbody.appendChild(tr);
     });
   } catch (err) {
-    alert("❌ Failed to load orders");
+    alert("Failed to load orders");
+    console.error(err);
   }
 }
 
 // ===============================
 // UPDATE ORDER STATUS
 // ===============================
-async function updateStatus(orderId, btn) {
-  const row = btn.closest("tr");
-  const select = row.querySelector("select");
-  const newStatus = select.value;
-
-  btn.disabled = true;
-  btn.innerText = "Updating...";
+async function updateStatus(orderId) {
+  const status = document.getElementById(`status-${orderId}`).value;
 
   try {
     const res = await fetch(
@@ -82,25 +81,28 @@ async function updateStatus(orderId, btn) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": "Bearer " + token,
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status }),
       }
     );
 
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.message || "Update failed");
+      alert(data.message || "Status update failed");
+      return;
     }
 
     alert("✅ Status updated successfully");
-
-    // 🔄 Reload to apply lock if Delivered
-    loadOrders();
+    loadOrders(); // reload table
   } catch (err) {
-    alert("❌ " + err.message);
+    alert("Server error");
+    console.error(err);
   }
 }
 
+// ===============================
+// INIT
 // ===============================
 loadOrders();

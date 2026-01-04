@@ -1,37 +1,91 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
-const adminAuth = require("../middleware/adminAuth");
 
+// 🔥 PROOF LOG
 console.log("✅ adminOrders routes file LOADED");
 
-// 🔐 GET ALL ORDERS
-router.get("/orders", adminAuth, async (req, res) => {
-  const orders = await Order.find().sort({ createdAt: -1 });
-  res.json(orders);
+// ===============================
+// GET ALL ORDERS (ADMIN)
+// URL: GET /api/admin/orders
+// ===============================
+router.get("/orders", async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
+      error: err.message,
+    });
+  }
 });
 
-// 🔐 UPDATE STATUS
-router.put("/orders/:id/status", adminAuth, async (req, res) => {
-  const { status } = req.body;
-  const allowed = ["Pending", "Processing", "Delivered", "Cancelled"];
+// ===============================
+// UPDATE ORDER STATUS (ADMIN)
+// URL: PUT /api/admin/orders/:id/status
+// ===============================
+router.put("/orders/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
 
-  if (!allowed.includes(status)) {
-    return res.status(400).json({ message: "Invalid status" });
+    const allowedStatus = [
+      "Pending",
+      "Processing",
+      "Delivered",
+      "Cancelled",
+    ];
+
+    if (!allowedStatus.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // 🔒 Invoice final hone ke baad change block
+    if (order.isInvoiceFinal && status !== "Delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Final invoice order cannot be changed",
+      });
+    }
+
+    order.status = status;
+
+    // ✅ Delivered → invoice final
+    if (status === "Delivered") {
+      order.isInvoiceFinal = true;
+    }
+
+    // ❌ Cancelled → unlock
+    if (status === "Cancelled") {
+      order.isInvoiceFinal = false;
+    }
+
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Order status updated successfully",
+      order,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Status update failed",
+      error: err.message,
+    });
   }
-
-  const order = await Order.findById(req.params.id);
-  if (!order) return res.status(404).json({ message: "Order not found" });
-
-  if (order.isInvoiceFinal && status !== "Delivered") {
-    return res.status(400).json({ message: "Invoice already final" });
-  }
-
-  order.status = status;
-  order.isInvoiceFinal = status === "Delivered";
-  await order.save();
-
-  res.json({ success: true, order });
 });
 
 module.exports = router;

@@ -1,48 +1,89 @@
 const API_BASE =
-  "https://garment-ecommerce-backend-production.up.railway.app/api";
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://garment-ecommerce-backend-production.up.railway.app";
 
+const tableBody = document.querySelector("#ordersTable tbody");
+
+// ===============================
+// LOAD ORDERS
+// ===============================
 async function loadOrders() {
-  const res = await fetch(`${API_BASE}/admin/orders`);
-  const orders = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/orders`);
+    const orders = await res.json();
 
-  const tbody = document.querySelector("#ordersTable tbody");
-  tbody.innerHTML = "";
+    tableBody.innerHTML = "";
 
-  orders.forEach((order) => {
-    const tr = document.createElement("tr");
+    orders.forEach((order) => {
+      const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td>${order.companyName}</td>
-      <td>${order.phone}</td>
-      <td>₹ ${order.total}</td>
-      <td>
-        <select id="status-${order._id}">
-          <option ${order.status === "Pending" ? "selected" : ""}>Pending</option>
-          <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
-          <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
-          <option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
-        </select>
-      </td>
-      <td>
-        <button onclick="updateStatus('${order._id}')">Update</button>
-      </td>
-    `;
+      tr.innerHTML = `
+        <td>${order.companyName}</td>
+        <td>${order.phone}</td>
+        <td>₹ ${order.total}</td>
+        <td>
+          <select data-id="${order._id}">
+            ${["Pending", "Processing", "Delivered", "Cancelled"]
+              .map(
+                (s) =>
+                  `<option value="${s}" ${
+                    s === order.status ? "selected" : ""
+                  }>${s}</option>`
+              )
+              .join("")}
+          </select>
+        </td>
+        <td>
+          <button onclick="updateStatus('${order._id}', this)">
+            Update
+          </button>
+        </td>
+      `;
 
-    tbody.appendChild(tr);
-  });
+      tableBody.appendChild(tr);
+    });
+  } catch (err) {
+    alert("Failed to load orders");
+  }
 }
 
-async function updateStatus(orderId) {
-  const status = document.getElementById(`status-${orderId}`).value;
+// ===============================
+// UPDATE STATUS
+// ===============================
+async function updateStatus(orderId, btn) {
+  const select = btn.parentElement.parentElement.querySelector("select");
+  const newStatus = select.value;
 
-  await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
-  });
+  btn.disabled = true;
+  btn.innerText = "Updating...";
 
-  alert("Status updated");
-  loadOrders();
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/admin/orders/${orderId}/status`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Update failed");
+    }
+
+    alert("✅ Status updated successfully");
+  } catch (err) {
+    alert("❌ " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Update";
+  }
 }
 
+// ===============================
 loadOrders();

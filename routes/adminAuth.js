@@ -2,27 +2,32 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const JWT_SECRET = process.env.JWT_SECRET;
+// 🔥 PROOF LOG
+console.log("✅ adminAuth routes LOADED");
 
-// ===============================
-// ADMIN LOGIN
-// ===============================
 router.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+  // ENV se credentials
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  // 🔎 DEBUG LOG (temporary – Railway logs me dikhega)
+  console.log("LOGIN ATTEMPT:", email, password);
+  console.log("EXPECTED:", adminEmail, adminPassword);
+
+  if (email !== adminEmail || password !== adminPassword) {
     return res.status(401).json({
       success: false,
-      message: "Invalid admin credentials",
+      message: "Invalid credentials",
     });
   }
 
+  // 🔐 JWT generate
   const token = jwt.sign(
     { role: "admin", email },
-    JWT_SECRET,
-    { expiresIn: "12h" }
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
   );
 
   res.json({

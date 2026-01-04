@@ -17,9 +17,18 @@ const orderSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ===============================
+    // ORDER STATUS (ADMIN CONTROLLED)
+    // ===============================
     status: {
       type: String,
-      default: "Pending", // Pending | Processing | Delivered
+      enum: [
+        "Pending",     // Order received
+        "Processing",  // Admin confirmed
+        "Delivered",   // Order delivered
+        "Cancelled",   // Order cancelled
+      ],
+      default: "Pending",
     },
 
     // ===============================
@@ -28,13 +37,14 @@ const orderSchema = new mongoose.Schema(
     invoiceNumber: {
       type: String,
       unique: true,
-      sparse: true, // existing orders safe
+      sparse: true, // old orders safe
     },
 
-    // 🔥 INVOICE FINAL FLAG
+    // 🔥 Invoice final hone ka flag
+    // (Delivered hone par true)
     isInvoiceFinal: {
       type: Boolean,
-      default: false, // Delivered hone par true
+      default: false,
     },
 
     // ===============================
@@ -72,16 +82,16 @@ const orderSchema = new mongoose.Schema(
           min: 0,
         },
 
-        // ✅ HSN CODE (GARMENTS)
+        // HSN CODE (Garments)
         hsn: {
           type: String,
           default: "6109",
         },
 
-        // ✅ GST RATE PER ITEM
+        // GST RATE PER ITEM
         gstRate: {
           type: Number,
-          default: 12, // 5 / 12 / 18
+          default: 12, // 5 | 12 | 18
         },
       },
     ],
@@ -96,7 +106,7 @@ const orderSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // createdAt, updatedAt
   }
 );
 

@@ -5,33 +5,18 @@ require("dotenv").config();
 
 const app = express();
 
-/* ===============================
-   CORS (FINAL SAFE)
-   =============================== */
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
+app.use(cors());
 app.use(express.json());
 
-/* ===============================
-   ROUTES
-   =============================== */
+// ROUTES
 const orderRoutes = require("./routes/orderRoutes");
 
 app.use("/api/orders", orderRoutes);
 
-/* ===============================
-   DB + SERVER
-   =============================== */
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error(err));
+// DB
+mongoose.connect(process.env.MONGO_URI).then(() => {
+  console.log("✅ MongoDB Connected");
+});
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 
+// 🔥 PROOF LOG — server start hote hi ye print hona chahiye
+console.log("✅ adminOrders routes file LOADED");
+
 // ===============================
 // GET ALL ORDERS (ADMIN)
 // ===============================
@@ -27,7 +30,6 @@ router.put("/orders/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
 
-    // Allowed statuses (extra safety)
     const allowedStatus = [
       "Pending",
       "Processing",
@@ -43,7 +45,6 @@ router.put("/orders/:id/status", async (req, res) => {
     }
 
     const order = await Order.findById(req.params.id);
-
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -59,7 +60,6 @@ router.put("/orders/:id/status", async (req, res) => {
       });
     }
 
-    // 🔥 Status update
     order.status = status;
 
     // ✅ Delivered → invoice final

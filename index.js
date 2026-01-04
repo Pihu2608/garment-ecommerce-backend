@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
@@ -13,15 +14,13 @@ app.use(express.json());
 const orderRoutes = require("./routes/orderRoutes");
 const adminOrderRoutes = require("./routes/adminOrders");
 
-// Customer / Public Orders
 app.use("/api/orders", orderRoutes);
 
-// 🔥 Admin Orders (VERY IMPORTANT)
+// 🔥 ADMIN ROUTES (THIS WAS MISSING)
 app.use("/api/admin", adminOrderRoutes);
 
-// ================= ADMIN PANEL STATIC =================
-// admin/orders.html serve karne ke liye
-app.use("/admin", express.static("admin"));
+// 🔥 ADMIN PANEL STATIC (FIXED PATH)
+app.use("/admin", express.static(path.join(__dirname, "admin")));
 
 // ================= DATABASE =================
 mongoose

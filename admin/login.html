@@ -11,24 +11,31 @@
   <button onclick="login()">Login</button>
 
   <script>
-    async function login() {
-      const res = await fetch("/api/admin/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: document.getElementById("email").value,
-          password: document.getElementById("password").value
-        })
-      });
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-      const data = await res.json();
-      if (data.success) {
-        localStorage.setItem("adminToken", data.token);
-        window.location.href = "/admin/dashboard.html";
-      } else {
-        alert("Login failed");
-      }
+  const res = await fetch(
+    "https://garment-ecommerce-backend-production.up.railway.app/api/admin/auth/login",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     }
-  </script>
+  );
+
+  const data = await res.json();
+
+  if (!data.success) {
+    alert("Login failed");
+    return;
+  }
+
+  localStorage.setItem("adminToken", data.token);
+  window.location.href = "/admin/dashboard.html";
+}
+</script>
+
 </body>
 </html>
+

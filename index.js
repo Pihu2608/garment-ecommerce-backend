@@ -14,12 +14,16 @@ app.use(express.json());
 const orderRoutes = require("./routes/orderRoutes");
 const adminOrderRoutes = require("./routes/adminOrders");
 
+// 🔍 PROOF LOG – ye console me aana hi chahiye
+console.log("✅ adminOrders routes REGISTERED");
+
+// Customer / Public routes
 app.use("/api/orders", orderRoutes);
 
-// 🔥 ADMIN ROUTES (THIS WAS MISSING)
+// 🔥 Admin routes
 app.use("/api/admin", adminOrderRoutes);
 
-// 🔥 ADMIN PANEL STATIC (FIXED PATH)
+// 🔥 Admin panel static files
 app.use("/admin", express.static(path.join(__dirname, "admin")));
 
 // ================= DATABASE =================

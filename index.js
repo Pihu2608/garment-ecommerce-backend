@@ -5,22 +5,34 @@ require("dotenv").config();
 
 const app = express();
 
-// ✅ CORS (FINAL)
-app.use(cors());
+/* ===============================
+   CORS (FINAL SAFE)
+   =============================== */
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
-// ROUTES
+/* ===============================
+   ROUTES
+   =============================== */
 const orderRoutes = require("./routes/orderRoutes");
 
-// ❌ यहाँ adminAuth मत लगाना
 app.use("/api/orders", orderRoutes);
 
-// DB
-mongoose.connect(process.env.MONGO_URI).then(() => {
-  console.log("✅ MongoDB Connected");
-});
+/* ===============================
+   DB + SERVER
+   =============================== */
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error(err));
 
-// SERVER
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

@@ -4,13 +4,14 @@ const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
 
 /* ===============================
-   GET ALL ORDERS (ADMIN PANEL)
+   GET ALL ORDERS (ADMIN PANEL - PUBLIC)
    =============================== */
 router.get("/", async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 });
@@ -35,7 +36,7 @@ router.get("/:id/invoice", async (req, res) => {
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error(err);
+    console.error("Invoice error:", err);
     res.status(500).json({ message: "Invoice generation failed" });
   }
 });

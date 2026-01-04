@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = function adminAuth(req, res, next) {
+module.exports = function (req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -14,6 +14,6 @@ module.exports = function adminAuth(req, res, next) {
     req.admin = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid / Expired token" });
+    return res.status(401).json({ message: "Invalid token" });
   }
 };

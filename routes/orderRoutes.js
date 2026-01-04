@@ -19,6 +19,29 @@ router.get("/", async (req, res) => {
 /* ===============================
    UPDATE ORDER STATUS (ADMIN)
    =============================== */
+/* ===============================
+   UPDATE ORDER STATUS (ADMIN)
+   =============================== */
+router.put("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ message: "Status update failed" });
+  }
+});
+
 router.put("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;

@@ -4,7 +4,7 @@ const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
 
 /* ===============================
-   GET ALL ORDERS (ADMIN PANEL - PUBLIC)
+   GET ALL ORDERS (PUBLIC – ADMIN PANEL)
    =============================== */
 router.get("/", async (req, res) => {
   try {

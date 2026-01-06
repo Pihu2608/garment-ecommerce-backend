@@ -10,32 +10,32 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ================= HEALTH CHECK =================
+// ================= ROUTES =================
+app.use("/api/admin/auth", require("./routes/adminAuth"));
+app.use("/api/admin", require("./routes/adminOrders"));
+app.use("/api/admin", require("./routes/adminDashboard"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+
+// ================= ADMIN PANEL =================
+app.use("/admin", express.static(path.join(__dirname, "admin")));
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "admin", "login.html"));
+});
+
+app.get("/admin/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "admin", "login.html"));
+});
+
+// ================= ROOT CHECK =================
 app.get("/", (req, res) => {
   res.json({
     status: "OK",
-    app: "ClassyCrafth Backend",
+    app: "ClassyCraft Backend",
     environment: "Production",
-    time: new Date(),
+    time: new Date().toISOString(),
   });
 });
-
-// ================= ROUTES =================
-
-// 🔐 Admin Auth (Login)
-app.use("/api/admin/auth", require("./routes/adminAuth"));
-
-// 📦 Admin Orders (List + Status Update)
-app.use("/api/admin", require("./routes/adminOrders"));
-
-// 📊 Admin Dashboard (Stats)
-app.use("/api/admin", require("./routes/adminDashboard"));
-
-// 🛒 Public Orders (Create / Track)
-app.use("/api/orders", require("./routes/orderRoutes"));
-
-// ================= ADMIN PANEL (STATIC) =================
-app.use("/admin", express.static(path.join(__dirname, "admin")));
 
 // ================= DATABASE =================
 mongoose

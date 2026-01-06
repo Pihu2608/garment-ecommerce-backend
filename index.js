@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 
 // ================= ROUTES =================
 
-// 🔐 Admin Auth
+// 🔐 Admin Auth API
 app.use("/api/admin/auth", require("./routes/adminAuth"));
 
 // 📦 Admin Orders
@@ -34,15 +34,13 @@ app.use("/api/admin", require("./routes/adminDashboard"));
 // 🛒 Public Orders
 app.use("/api/orders", require("./routes/orderRoutes"));
 
-// ================= ADMIN PANEL =================
-const adminPath = path.join(__dirname, "admin");
-app.use("/admin", express.static(adminPath));
+// ================= ADMIN PANEL (STATIC) =================
+app.use("/admin", express.static(path.join(__dirname, "admin")));
 
+// ✅ fallback for admin refresh (NO wildcard)
 app.get("/admin", (req, res) => {
-  res.sendFile(path.join(adminPath, "login.html"));
+  res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
-
-// ❗ IMPORTANT — catch-all REMOVE karo (koi /admin/* mat lagana)
 
 // ================= DATABASE =================
 mongoose

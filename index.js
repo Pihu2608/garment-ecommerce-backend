@@ -23,15 +23,11 @@ app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
 
-app.get("/admin/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "admin", "login.html"));
-});
-
-// ================= ROOT CHECK =================
+// ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
   res.json({
     status: "OK",
-    app: "ClassyCraft Backend",
+    app: "ClassyCrafth Backend",
     environment: "Production",
     time: new Date().toISOString(),
   });

@@ -10,6 +10,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ================= HEALTH CHECK =================
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    app: "ClassyCrafth Backend",
+    environment: "Production",
+    time: new Date(),
+  });
+});
+
 // ================= ROUTES =================
 
 // 🔐 Admin Auth (Login)

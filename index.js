@@ -10,19 +10,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ================= ROUTES =================
-app.use("/api/admin/auth", require("./routes/adminAuth"));
-app.use("/api/admin", require("./routes/adminOrders"));
-app.use("/api/admin", require("./routes/adminDashboard"));
-app.use("/api/orders", require("./routes/orderRoutes"));
-
-// ================= ADMIN PANEL =================
-app.use("/admin", express.static(path.join(__dirname, "admin")));
-
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "admin", "login.html"));
-});
-
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
   res.json({
@@ -32,6 +19,30 @@ app.get("/", (req, res) => {
     time: new Date().toISOString(),
   });
 });
+
+// ================= ROUTES =================
+
+// 🔐 Admin Auth
+app.use("/api/admin/auth", require("./routes/adminAuth"));
+
+// 📦 Admin Orders
+app.use("/api/admin", require("./routes/adminOrders"));
+
+// 📊 Admin Dashboard
+app.use("/api/admin", require("./routes/adminDashboard"));
+
+// 🛒 Public Orders
+app.use("/api/orders", require("./routes/orderRoutes"));
+
+// ================= ADMIN PANEL =================
+const adminPath = path.join(__dirname, "admin");
+app.use("/admin", express.static(adminPath));
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(adminPath, "login.html"));
+});
+
+// ❗ IMPORTANT — catch-all REMOVE karo (koi /admin/* mat lagana)
 
 // ================= DATABASE =================
 mongoose

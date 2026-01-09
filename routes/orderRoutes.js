@@ -1,86 +1,84 @@
 const express = require("express");
 const router = express.Router();
+
 const Order = require("../models/Order");
 const generateInvoice = require("../utils/invoiceGenerator");
+const { buildWhatsAppLink } = require("../utils/whatsapp");
+const { sendOrderMail } = require("../services/email.service");
 
 /* ===============================
-   GET ALL ORDERS (PUBLIC – ADMIN PANEL)
-   =============================== */
-router.get("/", async (req, res) => {
+   CREATE ORDER (PUBLIC)
+   + EMAIL + WhatsApp
+=============================== */
+router.post("/", async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to fetch orders" });
-  }
-});
+    const order = await Order.create(req.body);
 
-/* ===============================
-   UPDATE ORDER STATUS (ADMIN)
-   =============================== */
-/* ===============================
-   UPDATE ORDER STATUS (ADMIN)
-   =============================== */
-router.put("/:id/status", async (req, res) => {
-  try {
-    const { status } = req.body;
-
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
+    const totalAmount = order.items.reduce(
+      (sum, i) => sum + i.price * i.qty,
+      0
     );
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+    /* ========== EMAIL ========== */
+
+    // 📩 ADMIN EMAIL
+    await sendOrderMail({
+      to: process.env.ADMIN_EMAIL,
+      subject: "🛒 New Order Received - ClassyCrafth",
+      html: `
+        <h2>New Order Received</h2>
+        <p><b>Order ID:</b> ${order._id}</p>
+        <p><b>Name:</b> ${order.customerName}</p>
+        <p><b>Amount:</b> ₹${totalAmount}</p>
+      `
+    });
+
+    // 📩 CUSTOMER EMAIL
+    if (order.email) {
+      await sendOrderMail({
+        to: order.email,
+        subject: "✅ Your Order is Confirmed - ClassyCrafth",
+        html: `
+          <h2>Thank you for your order</h2>
+          <p>Your Order ID: ${order._id}</p>
+          <p>Total: ₹${totalAmount}</p>
+        `
+      });
     }
 
-    res.json({ success: true, order });
-  } catch (err) {
-    res.status(500).json({ message: "Status update failed" });
-  }
-});
+    /* ========== WHATSAPP LINK ========== */
 
-router.put("/:id/status", async (req, res) => {
-  try {
-    const { status } = req.body;
+    const message = `
+✅ Order Confirmed – ClassyCrafth
 
-    const allowedStatus = [
-      "Pending",
-      "Processing",
-      "Completed",
-      "Cancelled",
-    ];
+🧾 Order ID: ${order._id}
+👤 Name: ${order.customerName}
+💰 Amount: ₹${totalAmount}
 
-    if (!allowedStatus.includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
-    }
+📦 Track Order:
+${process.env.FRONTEND_URL}/track-order.html
 
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
+🧾 Download Invoice:
+${process.env.BACKEND_URL}/api/orders/${order._id}/invoice
+`;
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    const whatsappLink = buildWhatsAppLink(order.phone, message);
 
     res.json({
       success: true,
-      message: "Order status updated successfully",
       order,
+      whatsappLink,
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to update order status" });
+    console.error("ORDER + EMAIL ERROR:", err.message);
+    res.status(500).json({ message: "Order creation failed" });
   }
 });
 
 /* ===============================
    DOWNLOAD INVOICE (PUBLIC)
-   =============================== */
+=============================== */
 router.get("/:id/invoice", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);

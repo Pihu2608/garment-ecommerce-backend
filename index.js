@@ -6,34 +6,31 @@ require("dotenv").config();
 
 const app = express();
 
-// ================= MIDDLEWARE =================
+/* ========== MIDDLEWARE ========== */
 app.use(cors());
 app.use(express.json());
 
-// ================= ROUTES =================
-const orderRoutes = require("./routes/orderRoutes");
-const adminOrderRoutes = require("./routes/adminOrders");
-
-// 🔍 PROOF LOG – ye console me aana hi chahiye
-console.log("✅ adminOrders routes REGISTERED");
-
-// Customer / Public routes
-app.use("/api/orders", orderRoutes);
-
-// 🔥 Admin routes
-app.use("/api/admin", adminOrderRoutes);
-
-// 🔥 Admin panel static files
+/* ========== STATIC (ADMIN PANEL) ========== */
 app.use("/admin", express.static(path.join(__dirname, "admin")));
 
-// ================= DATABASE =================
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ Mongo Error:", err.message));
+/* ========== ROUTES ========== */
+app.use("/api/orders", require("./routes/orderRoutes"));       // ✅ orderRoutes.js
+app.use("/api/admin/auth", require("./routes/adminAuth"));     // ✅ adminAuth.js
+app.use("/api/admin", require("./routes/adminOrders"));        // ✅ adminOrders.js
+app.use("/api/payment", require("./routes/payment.routes"));   // ✅ payment.routes.js
 
-// ================= SERVER =================
+/* ========== TEST ROUTE ========== */
+app.get("/", (req, res) => {
+  res.send("✅ ClassyCrafth backend is running...");
+});
+
+/* ========== DATABASE ========== */
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch(err => console.log("❌ Mongo error:", err.message));
+
+/* ========== SERVER ========== */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("🚀 ClassyCrafth server running on port", PORT);
 });

@@ -1,16 +1,20 @@
 const PDFDocument = require("pdfkit");
 const path = require("path");
-const { calculateGST } = require("./gstUtils");
 
-// ===============================
-// ASSETS (Railway Safe)
-// ===============================
+/* ===============================
+   CONFIG
+=============================== */
+const SELLER_STATE = "MP"; // Madhya Pradesh
+
+/* ===============================
+   ASSETS (Railway Safe)
+=============================== */
 const logoPath = path.join(__dirname, "../assets/logo.png");
 const stampPath = path.join(__dirname, "../assets/stamp.png");
 
-// ===============================
-// HELPERS (POLISH)
-// ===============================
+/* ===============================
+   HELPERS
+=============================== */
 function formatINR(amount) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -21,30 +25,20 @@ function formatINR(amount) {
 
 function amountInWords(amount) {
   const a = [
-    "", "One", "Two", "Three", "Four", "Five", "Six",
-    "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
-    "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-    "Seventeen", "Eighteen", "Nineteen",
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+    "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen",
+    "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen",
   ];
-  const b = [
-    "", "", "Twenty", "Thirty", "Forty",
-    "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
-  ];
+  const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
   function inWords(num) {
     if (num < 20) return a[num];
     if (num < 100) return b[Math.floor(num / 10)] + " " + a[num % 10];
-    if (num < 1000)
-      return a[Math.floor(num / 100)] + " Hundred " + inWords(num % 100);
-    if (num < 100000)
-      return inWords(Math.floor(num / 1000)) + " Thousand " + inWords(num % 1000);
+    if (num < 1000) return a[Math.floor(num / 100)] + " Hundred " + inWords(num % 100);
+    if (num < 100000) return inWords(Math.floor(num / 1000)) + " Thousand " + inWords(num % 1000);
     if (num < 10000000)
       return inWords(Math.floor(num / 100000)) + " Lakh " + inWords(num % 100000);
-    return (
-      inWords(Math.floor(num / 10000000)) +
-      " Crore " +
-      inWords(num % 10000000)
-    );
+    return inWords(Math.floor(num / 10000000)) + " Crore " + inWords(num % 10000000);
   }
 
   return inWords(Math.floor(amount)) + " Rupees Only";
@@ -57,9 +51,9 @@ function checkPageBreak(doc) {
   }
 }
 
-// ===============================
-// MAIN INVOICE
-// ===============================
+/* ===============================
+   MAIN FUNCTION
+=============================== */
 function generateInvoice(order) {
   return new Promise((resolve, reject) => {
     try {
@@ -69,120 +63,174 @@ function generateInvoice(order) {
       doc.on("data", buffers.push.bind(buffers));
       doc.on("end", () => resolve(Buffer.concat(buffers)));
 
-      /* ================= HEADER ================= */
-      doc.image(logoPath, 40, 40, { width: 120 });
+      const isIGST = order.placeOfSupply !== SELLER_STATE;
 
-      doc.fontSize(20).text("CORPORATEMART", 200, 45);
+      /* ========= HEADER ========= */
+      if (logoPath) doc.image(logoPath, 40, 40, { width: 110 });
+
       doc
+        .fontSize(20)
+        .text("CORPORATEMART", 180, 45)
         .fontSize(10)
-        .text(`GSTIN: ${order.gstin}`, 200, 70)
-        .text("Bhopal, Madhya Pradesh", 200, 85);
+        .text(`GSTIN: ${order.gstin || "NA"}`, 180, 72)
+        .text("Bhopal, Madhya Pradesh", 180, 87)
+        .text(
+          isIGST
+            ? "Inter-State Supply (IGST Applicable)"
+            : "Intra-State Supply (CGST + SGST Applicable)",
+          180,
+          102
+        );
 
       doc.moveDown(4);
 
-      /* ================= INVOICE INFO ================= */
-      doc.fontSize(12).text(`Invoice No: ${order.invoiceNumber}`);
-      doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`);
-      doc.moveDown();
+      /* ========= INVOICE INFO ========= */
+      doc
+        .fontSize(11)
+        .text(`Invoice No: ${order.invoiceNumber || order._id}`, 40)
+        .text(`Invoice Date: ${new Date(order.createdAt).toLocaleDateString()}`)
+        .moveDown();
 
-      /* ================= CUSTOMER ================= */
-      doc.text(`Customer Name: ${order.companyName}`);
-      doc.text(`Phone: ${order.phone}`);
-      doc.moveDown();
+      /* ========= CUSTOMER ========= */
+      doc
+        .text(`Customer Name: ${order.customerName || order.companyName}`)
+        .text(`Phone: ${order.phone}`)
+        .text(`Address: ${order.address || "NA"}`)
+        .text(`Place of Supply: ${order.placeOfSupply || "NA"}`)
+        .moveDown();
 
-      /* ================= ITEMS HEADER ================= */
-      doc.fontSize(11);
-      doc.text("Item", 40, doc.y, { width: 150 });
-      doc.text("Qty", 200, doc.y);
-      doc.text("Rate", 240, doc.y);
-      doc.text("HSN", 290, doc.y);
-      doc.text("GST%", 340, doc.y);
-      doc.text("Total", 400, doc.y);
-      doc.moveDown(0.5);
+      /* ========= TABLE HEADER ========= */
+      doc.fontSize(10).font("Helvetica-Bold");
+      doc.text("Item", 40);
+      doc.text("Qty", 200);
+      doc.text("Rate", 240);
+      doc.text("HSN", 300);
+      doc.text("GST%", 350);
+      doc.text("Total", 420);
+      doc.moveDown(0.3);
       doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
-      doc.moveDown(0.5);
+      doc.moveDown(0.3);
+      doc.font("Helvetica");
 
-      /* ================= ITEMS ================= */
+      /* ========= ITEMS ========= */
       let subTotal = 0;
-      let totalGST = 0;
+      let totalCGST = 0;
+      let totalSGST = 0;
+      let totalIGST = 0;
+
       const hsnSummary = {};
 
       order.items.forEach((item) => {
         checkPageBreak(doc);
 
         const baseAmount = item.qty * item.price;
-        const gstRate = item.gstRate || (item.price >= 1000 ? 12 : 5);
-        const gst = calculateGST(baseAmount, gstRate);
-
+        const gstRate = item.gstRate || 18;
         subTotal += baseAmount;
-        totalGST += gst.gstAmount;
 
         if (!hsnSummary[item.hsn]) {
-          hsnSummary[item.hsn] = { taxable: 0, cgst: 0, sgst: 0, gst: 0 };
+          hsnSummary[item.hsn] = {
+            taxable: 0,
+            cgst: 0,
+            sgst: 0,
+            igst: 0,
+          };
         }
 
-        hsnSummary[item.hsn].taxable += baseAmount;
-        hsnSummary[item.hsn].cgst += gst.cgst;
-        hsnSummary[item.hsn].sgst += gst.sgst;
-        hsnSummary[item.hsn].gst += gst.gstAmount;
+        if (isIGST) {
+          const igst = (baseAmount * gstRate) / 100;
+          totalIGST += igst;
 
-        doc.text(item.name, 40, doc.y, { width: 150 });
-        doc.text(item.qty, 200, doc.y);
-        doc.text(formatINR(item.price), 240, doc.y);
-        doc.text(item.hsn, 290, doc.y);
-        doc.text(`${gstRate}%`, 340, doc.y);
-        doc.text(formatINR(gst.total), 400, doc.y);
+          hsnSummary[item.hsn].taxable += baseAmount;
+          hsnSummary[item.hsn].igst += igst;
+
+          doc.text(item.name, 40, doc.y, { width: 150 });
+          doc.text(item.qty, 200);
+          doc.text(formatINR(item.price), 240);
+          doc.text(item.hsn || "-", 300);
+          doc.text(`${gstRate}%`, 350);
+          doc.text(formatINR(baseAmount + igst), 420);
+        } else {
+          const cgst = (baseAmount * gstRate) / 200;
+          const sgst = cgst;
+
+          totalCGST += cgst;
+          totalSGST += sgst;
+
+          hsnSummary[item.hsn].taxable += baseAmount;
+          hsnSummary[item.hsn].cgst += cgst;
+          hsnSummary[item.hsn].sgst += sgst;
+
+          doc.text(item.name, 40, doc.y, { width: 150 });
+          doc.text(item.qty, 200);
+          doc.text(formatINR(item.price), 240);
+          doc.text(item.hsn || "-", 300);
+          doc.text(`${gstRate / 2}%+${gstRate / 2}%`, 350);
+          doc.text(formatINR(baseAmount + cgst + sgst), 420);
+        }
+
         doc.moveDown();
       });
 
-      /* ================= HSN SUMMARY ================= */
-      doc.moveDown();
-      doc.fontSize(13).text("HSN Summary", { underline: true });
-      doc.moveDown(0.5);
+      /* ========= HSN SUMMARY ========= */
+      doc.addPage();
+      doc.fontSize(14).text("HSN Wise GST Summary", { underline: true });
+      doc.moveDown(1);
 
-      doc.fontSize(10);
+      doc.fontSize(10).font("Helvetica-Bold");
       doc.text("HSN", 40);
       doc.text("Taxable", 120);
       doc.text("CGST", 220);
       doc.text("SGST", 300);
-      doc.text("Total GST", 380);
+      doc.text("IGST", 380);
+      doc.text("Total GST", 460);
       doc.moveDown(0.3);
       doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
       doc.moveDown(0.3);
+      doc.font("Helvetica");
 
       Object.keys(hsnSummary).forEach((hsn) => {
         const r = hsnSummary[hsn];
+        const totalGST = r.cgst + r.sgst + r.igst;
+
         doc.text(hsn, 40);
         doc.text(formatINR(r.taxable), 120);
         doc.text(formatINR(r.cgst), 220);
         doc.text(formatINR(r.sgst), 300);
-        doc.text(formatINR(r.gst), 380);
+        doc.text(formatINR(r.igst), 380);
+        doc.text(formatINR(totalGST), 460);
         doc.moveDown();
       });
 
-      /* ================= TOTALS ================= */
+      /* ========= TOTALS ========= */
+      const totalGST = totalCGST + totalSGST + totalIGST;
       const grandTotal = subTotal + totalGST;
 
       doc.moveDown();
-      doc.fontSize(12).text(`Subtotal: ${formatINR(subTotal)}`, { align: "right" });
-      doc.text(`GST: ${formatINR(totalGST)}`, { align: "right" });
-      doc.fontSize(14).text(`Grand Total: ${formatINR(grandTotal)}`, {
-        align: "right",
-      });
+      doc.fontSize(11).text(`Taxable Amount: ${formatINR(subTotal)}`, { align: "right" });
 
+      if (isIGST) {
+        doc.text(`IGST: ${formatINR(totalIGST)}`, { align: "right" });
+      } else {
+        doc.text(`CGST: ${formatINR(totalCGST)}`, { align: "right" });
+        doc.text(`SGST: ${formatINR(totalSGST)}`, { align: "right" });
+      }
+
+      doc.fontSize(14).text(`Grand Total: ${formatINR(grandTotal)}`, { align: "right" });
       doc.moveDown();
       doc.fontSize(10).text(`Amount in Words: ${amountInWords(grandTotal)}`);
 
-      /* ================= FOOTER ================= */
+      /* ========= FOOTER ========= */
       doc.moveDown(3);
-      doc.image(stampPath, 380, doc.y, { width: 120 });
-      doc.fontSize(10)
+      if (stampPath) doc.image(stampPath, 380, doc.y, { width: 120 });
+
+      doc
+        .fontSize(10)
         .text("For CORPORATEMART", 380, doc.y + 90)
         .text("Authorized Signatory", 380, doc.y + 105);
 
       doc.moveDown(5);
       doc.fontSize(9).text(
-        "This is a computer-generated GST invoice.",
+        "This is a computer-generated GST invoice. No signature required.",
         { align: "center" }
       );
 

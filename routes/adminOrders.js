@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 
-// 🔥 PROOF LOG — server start hote hi ye print hona chahiye
+// 🔥 PROOF LOG
 console.log("✅ adminOrders routes file LOADED");
 
 // ===============================
 // GET ALL ORDERS (ADMIN)
-// ===============================
 // URL: GET /api/admin/orders
+// ===============================
 router.get("/orders", async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -24,8 +24,8 @@ router.get("/orders", async (req, res) => {
 
 // ===============================
 // UPDATE ORDER STATUS (ADMIN)
-// ===============================
 // URL: PUT /api/admin/orders/:id/status
+// ===============================
 router.put("/orders/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
@@ -52,7 +52,7 @@ router.put("/orders/:id/status", async (req, res) => {
       });
     }
 
-    // 🚫 Invoice final hone ke baad status change allow nahi
+    // 🔒 Invoice final hone ke baad change block
     if (order.isInvoiceFinal && status !== "Delivered") {
       return res.status(400).json({
         success: false,
@@ -67,7 +67,7 @@ router.put("/orders/:id/status", async (req, res) => {
       order.isInvoiceFinal = true;
     }
 
-    // ❌ Cancelled → invoice final false
+    // ❌ Cancelled → unlock
     if (status === "Cancelled") {
       order.isInvoiceFinal = false;
     }

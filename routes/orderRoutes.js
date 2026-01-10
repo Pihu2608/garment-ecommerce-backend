@@ -2,11 +2,16 @@ const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 
+console.log("🔥🔥🔥 LIVE ORDER ROUTE FILE LOADED");
+
 /* ===============================
    CREATE ORDER (PUBLIC)
 =============================== */
 router.post("/", async (req, res) => {
   try {
+    console.log("🔥🔥🔥 LIVE ORDER ROUTE HIT");
+    console.log("🔥 BODY:", req.body);
+
     if (!req.body.items || !req.body.items.length) {
       return res.status(400).json({ message: "Items required" });
     }
@@ -18,8 +23,11 @@ router.post("/", async (req, res) => {
       price: Number(i.price) || 0
     }));
 
-    // ✅ AUTO TOTAL (MAIN FIX)
+    // ✅ AUTO TOTAL
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
+    console.log("🔥 ITEMS CLEANED:", items);
+    console.log("🔥 TOTAL CALCULATED:", total);
 
     // ✅ ORDER CREATE
     const order = await Order.create({
@@ -36,7 +44,7 @@ router.post("/", async (req, res) => {
     });
 
   } catch (err) {
-    console.log("❌ ORDER ERROR:", err.message);
+    console.log("❌ FINAL ORDER ERROR:", err);
     return res.status(500).json({
       success: false,
       message: "Order failed",

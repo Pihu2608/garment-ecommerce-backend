@@ -1,14 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-/* 🔥 VERY IMPORTANT DEBUG (Railway kis Order.js ko use kar raha hai) */
-console.log("🔥 ORDER MODEL FILE =>", require.resolve("../models/Order"));
+console.log("🔥 ORDER MODEL PATH =>", require.resolve("../models/Order"));
 
 const Order = require("../models/Order");
 
-/* ===============================
-   CREATE ORDER (PUBLIC)
-=============================== */
 router.post("/", async (req, res) => {
   try {
 
@@ -16,23 +12,22 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Items required" });
     }
 
-    // ✅ SAFE ITEMS
     req.body.items = req.body.items.map(i => ({
-      name: i.name || i.title || "Item",
+      name: i.name || "Item",
       qty: Number(i.qty) || 1,
       price: Number(i.price) || 0
     }));
 
-    // ✅ AUTO TOTAL (MAIN FIX)
+    // ✅ AUTO TOTAL
     req.body.total = req.body.items.reduce(
-      (sum, i) => sum + (i.price * i.qty), 0
+      (s, i) => s + i.price * i.qty, 0
     );
 
     const order = await Order.create(req.body);
 
     res.json({
       success: true,
-      message: "Order created",
+      message: "Order created successfully",
       order
     });
 

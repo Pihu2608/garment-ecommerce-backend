@@ -2,10 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
 
-/* =========================
-   ADD PRODUCT
-   POST /api/products
-========================= */
+// ➕ ADD PRODUCT
 router.post("/", async (req, res) => {
   try {
     const product = await Product.create(req.body);
@@ -15,10 +12,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* =========================
-   GET ALL PRODUCTS
-   GET /api/products
-========================= */
+// 📦 GET ALL PRODUCTS
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -28,9 +22,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* =========================
-   GET SINGLE PRODUCT
-========================= */
+// 🔍 GET SINGLE PRODUCT
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -40,9 +32,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/* =========================
-   UPDATE PRODUCT
-========================= */
+// ✏️ UPDATE PRODUCT
 router.put("/:id", async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -52,9 +42,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-/* =========================
-   DELETE PRODUCT
-========================= */
+// 🗑️ DELETE PRODUCT
 router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);

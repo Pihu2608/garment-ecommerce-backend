@@ -7,33 +7,36 @@ const Order = require("../models/Order");
 =============================== */
 router.post("/", async (req, res) => {
   try {
-
     if (!req.body.items || !req.body.items.length) {
       return res.status(400).json({ message: "Items required" });
     }
 
-    // ✅ Clean items
-    req.body.items = req.body.items.map(i => ({
+    // ✅ items clean
+    const items = req.body.items.map(i => ({
       name: i.name || "Item",
       qty: Number(i.qty) || 1,
       price: Number(i.price) || 0
     }));
 
     // ✅ AUTO TOTAL (MAIN FIX)
-    req.body.total = req.body.items.reduce(
-      (s, i) => s + i.price * i.qty,
-      0
-    );
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
-    const order = await Order.create(req.body);
+    // ✅ ORDER CREATE
+    const order = await Order.create({
+      companyName: req.body.companyName,
+      phone: req.body.phone,
+      items,
+      total
+    });
 
     return res.json({
       success: true,
+      message: "Order placed successfully",
       order
     });
 
   } catch (err) {
-    console.log("ORDER ERROR:", err.message);
+    console.log("❌ ORDER ERROR:", err.message);
     return res.status(500).json({
       success: false,
       message: "Order failed",

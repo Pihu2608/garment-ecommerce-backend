@@ -4,6 +4,8 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 
+console.log("🔥🔥 MAIN INDEX FILE RUNNING 🔥🔥");
+
 const app = express();
 
 /* ========== MIDDLEWARE ========== */
@@ -14,6 +16,7 @@ app.use(express.json());
 app.use("/admin", express.static(path.join(__dirname, "admin")));
 
 /* ========== ROUTES ========== */
+console.log("🔥🔥 USING ORDER ROUTE FILE 🔥🔥");
 app.use("/api/orders", require("./routes/orderRoutes"));       // ✅ orderRoutes.js
 app.use("/api/admin/auth", require("./routes/adminAuth"));     // ✅ adminAuth.js
 app.use("/api/admin", require("./routes/adminOrders"));        // ✅ adminOrders.js

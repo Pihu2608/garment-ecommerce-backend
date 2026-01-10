@@ -1,41 +1,54 @@
 const express = require("express");
 const router = express.Router();
-
-console.log("🔥 ORDER MODEL PATH =>", require.resolve("../models/Order"));
-
 const Order = require("../models/Order");
 
+/* ===============================
+   CREATE ORDER (PUBLIC) ✅ FINAL
+================================ */
 router.post("/", async (req, res) => {
   try {
+    console.log("🔥 INCOMING BODY:", req.body);
 
     if (!req.body.items || !req.body.items.length) {
       return res.status(400).json({ message: "Items required" });
     }
 
-    req.body.items = req.body.items.map(i => ({
+    // ✅ items normalize
+    const cleanItems = req.body.items.map(i => ({
       name: i.name || "Item",
       qty: Number(i.qty) || 1,
       price: Number(i.price) || 0
     }));
 
-    // ✅ AUTO TOTAL
-    req.body.total = req.body.items.reduce(
-      (s, i) => s + i.price * i.qty, 0
+    // ✅ FORCE TOTAL (this fixes your error)
+    const total = cleanItems.reduce(
+      (s, i) => s + i.price * i.qty,
+      0
     );
 
-    const order = await Order.create(req.body);
+    // ✅ FORCE SAFE BODY
+    const orderData = {
+      companyName: req.body.companyName || req.body.name || "Customer",
+      phone: req.body.phone || req.body.mobile || "0000000000",
+      items: cleanItems,
+      total: total
+    };
 
-    res.json({
+    console.log("✅ FINAL ORDER DATA:", orderData);
+
+    const order = await Order.create(orderData);
+
+    return res.json({
       success: true,
-      message: "Order created successfully",
+      message: "Order placed successfully",
       order
     });
 
   } catch (err) {
     console.error("❌ ORDER ERROR:", err);
-    res.status(500).json({
-      message: "Order failed",
-      error: err.message
+    return res.status(500).json({
+      success: false,
+      message: err.message
     });
   }
 });

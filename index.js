@@ -1,4 +1,6 @@
 const express = require("express");
+console.log("🔥🔥 PRODUCTS INDEX FILE RUNNING 🔥🔥");
+
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();

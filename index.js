@@ -18,13 +18,25 @@ app.use("/admin", express.static(path.join(__dirname, "admin")));
 /* ========== ROUTES ========== */
 console.log("🔥🔥 USING ROUTE FILES 🔥🔥");
 
+// Orders
 app.use("/api/orders", require("./routes/orderRoutes"));
-app.use("/api/admin/auth", require("./routes/adminAuth"));
-app.use("/api/admin", require("./routes/adminOrders"));
-app.use("/api/payment", require("./routes/payment.routes"));
+console.log("✅ order routes LOADED");
 
-// ✅ PRODUCTS ROUTE (FINAL ADD)
+// Admin auth
+app.use("/api/admin/auth", require("./routes/adminAuth"));
+console.log("✅ adminAuth routes LOADED");
+
+// Admin orders / dashboard
+app.use("/api/admin", require("./routes/adminOrders"));
+console.log("✅ adminOrders routes LOADED");
+
+// Payment
+app.use("/api/payment", require("./routes/payment.routes"));
+console.log("✅ payment routes LOADED");
+
+// ✅ PRODUCTS (NEW – FINAL)
 app.use("/api/products", require("./routes/productRoutes"));
+console.log("✅ products routes LOADED");
 
 /* ========== TEST ROUTE ========== */
 app.get("/", (req, res) => {

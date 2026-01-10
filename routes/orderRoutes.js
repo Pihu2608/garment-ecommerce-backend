@@ -1,31 +1,56 @@
-const mongoose = require("mongoose");
+const express = require("express");
+const router = express.Router();
 
-const orderSchema = new mongoose.Schema(
-  {
-    companyName: { type: String, required: true },
-    phone: { type: String, required: true },
+const Order = require("../models/Order");
 
-    status: {
-      type: String,
-      enum: ["Pending", "Processing", "Delivered", "Cancelled"],
-      default: "Pending",
-    },
+/* ===============================
+   CREATE ORDER (100% SAFE)
+=============================== */
+router.post("/", async (req, res) => {
+  try {
 
-    items: [
-      {
-        name: { type: String, required: true },
-        qty: { type: Number, required: true },
-        price: { type: Number, required: true },
-      },
-    ],
+    // ✅ force fields
+    if (!req.body.companyName && req.body.name) {
+      req.body.companyName = req.body.name;
+    }
 
-    // ❌ required हटाया
-    total: {
-      type: Number,
-      default: 0,
-    },
-  },
-  { timestamps: true }
-);
+    if (!req.body.phone && req.body.mobile) {
+      req.body.phone = req.body.mobile;
+    }
 
-module.exports = mongoose.model("Order", orderSchema);
+    if (!req.body.items || !req.body.items.length) {
+      return res.status(400).json({ message: "Items required" });
+    }
+
+    // ✅ clean items
+    req.body.items = req.body.items.map(i => ({
+      name: i.name || "Item",
+      qty: Number(i.qty) || 1,
+      price: Number(i.price) || 0
+    }));
+
+    // ✅ FORCE TOTAL (THIS FIXES YOUR BUG)
+    req.body.total = req.body.items.reduce(
+      (s, i) => s + i.price * i.qty, 0
+    );
+
+    console.log("🔥 FINAL ORDER BODY =>", req.body);
+
+    const order = await Order.create(req.body);
+
+    res.json({
+      success: true,
+      message: "Order created",
+      order
+    });
+
+  } catch (err) {
+    console.error("❌ ORDER CREATE ERROR =>", err);
+    res.status(500).json({
+      message: "Order creation failed",
+      error: err.message
+    });
+  }
+});
+
+module.exports = router;

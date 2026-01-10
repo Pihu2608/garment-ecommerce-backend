@@ -4,8 +4,26 @@ const { sendWhatsApp } = require("../services/whatsapp.service");
 
 exports.createOrder = async (req, res) => {
   try {
-    const order = new Order(req.body);
-    await order.save();
+    const { companyName, phone, email, items } = req.body;
+
+    if (!items || !items.length) {
+      return res.status(400).json({ success: false, message: "Items required" });
+    }
+
+    // ✅ Calculate total on backend
+    const total = items.reduce(
+      (sum, i) => sum + Number(i.price) * Number(i.qty),
+      0
+    );
+
+    // ✅ Create & save order
+    const order = await Order.create({
+      companyName,
+      phone,
+      email,
+      items,
+      total
+    });
 
     // ================= EMAIL =================
 
@@ -16,18 +34,19 @@ exports.createOrder = async (req, res) => {
       html: `
         <h2>New Order Received</h2>
         <p><b>Order ID:</b> ${order._id}</p>
-        <p><b>Amount:</b> ₹${order.totalAmount}</p>
+        <p><b>Amount:</b> ₹${order.total}</p>
       `
     });
 
-    // Customer email (agar email field hai)
+    // Customer email (optional)
     if (order.email) {
       await sendOrderMail({
         to: order.email,
         subject: "✅ Your Order is Confirmed - ClassyCrafth",
         html: `
           <h2>Thank you for your order</h2>
-          <p>Your Order ID: ${order._id}</p>
+          <p><b>Order ID:</b> ${order._id}</p>
+          <p><b>Amount:</b> ₹${order.total}</p>
           <p>We will contact you soon.</p>
         `
       });
@@ -40,10 +59,10 @@ exports.createOrder = async (req, res) => {
       to: process.env.ADMIN_MOBILE,
       message: `🛒 New Order Received
 Order ID: ${order._id}
-Amount: ₹${order.totalAmount}`
+Amount: ₹${order.total}`
     });
 
-    // Customer WhatsApp (agar phone field hai)
+    // Customer WhatsApp
     if (order.phone) {
       await sendWhatsApp({
         to: order.phone,
@@ -56,7 +75,7 @@ ClassyCrafth`
     res.json({ success: true, order });
 
   } catch (err) {
-    console.log("Order error:", err.message);
-    res.status(500).json({ success: false, message: "Order failed" });
+    console.error("❌ ORDER + EMAIL ERROR:", err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };

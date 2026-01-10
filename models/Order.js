@@ -2,28 +2,40 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    companyName: { type: String, required: true },
-    phone: { type: String, required: true },
+    companyName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
     status: {
       type: String,
       enum: ["Pending", "Processing", "Delivered", "Cancelled"],
-      default: "Pending"
+      default: "Pending",
     },
 
     items: [
       {
         name: { type: String, required: true },
-        qty: { type: Number, required: true },
-        price: { type: Number, required: true }
-      }
+        qty: { type: Number, required: true, min: 1 },
+        price: { type: Number, required: true, min: 0 },
+      },
     ],
 
-    // 🔥 VERY IMPORTANT FIX
+    // 🔥🔥 VERY IMPORTANT FIX
+    // ❌ required हटाया
+    // ✅ default दिया
     total: {
       type: Number,
-      default: 0   // ❌ required हटाया
-    }
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );

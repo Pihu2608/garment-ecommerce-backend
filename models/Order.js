@@ -2,17 +2,8 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    companyName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    companyName: { type: String, required: true },
+    phone: { type: String, required: true },
 
     status: {
       type: String,
@@ -20,38 +11,15 @@ const orderSchema = new mongoose.Schema(
       default: "Pending",
     },
 
-    invoiceNumber: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-
-    isInvoiceFinal: {
-      type: Boolean,
-      default: false,
-    },
-
-    gstin: {
-      type: String,
-      default: "23ABCDE1234F1Z5",
-    },
-
-    state: {
-      type: String,
-      default: "MP",
-    },
-
     items: [
       {
         name: { type: String, required: true },
-        qty: { type: Number, required: true, min: 1 },
-        price: { type: Number, required: true, min: 0 },
-        hsn: { type: String, default: "6109" },
-        gstRate: { type: Number, default: 12 },
+        qty: { type: Number, required: true },
+        price: { type: Number, required: true },
       },
     ],
 
-    // ❌ NOT REQUIRED ANYMORE
+    // ❌ required हटाया
     total: {
       type: Number,
       default: 0,

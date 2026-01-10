@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+console.log("🔥🔥🔥 LIVE ORDER MODEL LOADED — VERSION FINAL");
+
 const orderSchema = new mongoose.Schema(
   {
     companyName: {
@@ -28,8 +30,8 @@ const orderSchema = new mongoose.Schema(
       },
     ],
 
-    // ❌ REQUIRED हटाया
-    // ✅ backend खुद set करेगा
+    // ✅ total REQUIRED नहीं है
+    // ✅ backend auto calculate करेगा
     total: {
       type: Number,
       default: 0,

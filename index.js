@@ -37,3 +37,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("🚀 ClassyCrafth server running on port", PORT);
 });
+
+app.post("/api/test", (req, res) => {
+  console.log("🧪 TEST ROUTE BODY 👉", req.body);
+  res.json({ success: true, received: req.body, time: new Date() });
+});

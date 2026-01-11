@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const Product = require("../models/Product");
+const Product = require("../models/product");
+
+console.log("🔥 productRoutes FILE LOADED");
+
 
 // ➕ ADD PRODUCT
 router.post("/", async (req, res) => {

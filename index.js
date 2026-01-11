@@ -26,7 +26,7 @@ console.log("✅ order routes LOADED");
 app.use("/api/admin/auth", require("./routes/adminAuth"));
 console.log("✅ adminAuth routes LOADED");
 
-// Admin orders / dashboard
+// Admin orders
 app.use("/api/admin", require("./routes/adminOrders"));
 console.log("✅ adminOrders routes LOADED");
 
@@ -34,9 +34,16 @@ console.log("✅ adminOrders routes LOADED");
 app.use("/api/payment", require("./routes/payment.routes"));
 console.log("✅ payment routes LOADED");
 
-// ✅ PRODUCTS (NEW – FINAL)
-app.use("/api/products", require("./routes/productRoutes"));
+// ================= PRODUCTS (DEBUG FINAL) =================
+console.log("👉 BEFORE products require");
+
+const productRoutes = require("./routes/productRoutes");
+
+console.log("👉 AFTER products require");
+
+app.use("/api/products", productRoutes);
 console.log("✅ products routes LOADED");
+// ==========================================================
 
 /* ========== TEST ROUTE ========== */
 app.get("/", (req, res) => {
@@ -46,10 +53,9 @@ app.get("/", (req, res) => {
 app.use("/api/customer", require("./routes/customerProfile"));
 app.use("/api/admin", require("./routes/adminDashboard"));
 
-
-
 /* ========== DATABASE ========== */
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.log("❌ Mongo error:", err.message));
 

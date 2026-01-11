@@ -1,46 +1,45 @@
 const express = require("express");
-const Razorpay = require("razorpay");
-
 const router = express.Router();
 
-/* ===============================
-   CREATE RAZORPAY ORDER
-   POST /api/payment/create-order
-================================ */
-router.post("/create-order", async (req, res) => {
+// ⚠️ VERY IMPORTANT – filename aur path EXACT same hona chahiye
+const Product = require("../models/Product");  
+
+console.log("🔥 productRoutes FILE LOADED");
+
+/* =========================
+   ADD PRODUCT
+========================= */
+router.post("/", async (req, res) => {
   try {
-    const { amount } = req.body;
-
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      return res.status(500).json({
-        success: false,
-        message: "Razorpay keys missing in environment"
-      });
-    }
-
-    // ✅ Razorpay instance INSIDE route (CRASH FIX)
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET
-    });
-
-    const order = await razorpay.orders.create({
-      amount: amount * 100,
-      currency: "INR",
-      receipt: "classycrafth_" + Date.now()
-    });
-
-    res.json({
-      success: true,
-      order
-    });
-
+    const product = await Product.create(req.body);
+    res.json({ success: true, product });
   } catch (err) {
-    console.log("❌ Razorpay error:", err.message);
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/* =========================
+   GET ALL PRODUCTS
+========================= */
+router.get("/", async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* =========================
+   GET SINGLE PRODUCT
+========================= */
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: "Invalid ID" });
   }
 });
 

@@ -1,72 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<title>Admin Login | ClassyCrafth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<style>
+*{box-sizing:border-box;font-family:Segoe UI,Arial,sans-serif}
+body{
+  margin:0;
+  background:linear-gradient(120deg,#111,#e91e63);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.login-box{
+  width:100%;
+  max-width:380px;
+  background:#fff;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.25);
+  text-align:center;
+}
+
+.login-box h2{
+  margin-bottom:5px;
+  color:#111;
+}
+
+.login-box p{
+  color:#666;
+  margin-bottom:25px;
+  font-size:14px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:14px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:14px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:30px;
+  background:#111;
+  color:#fff;
+  font-size:15px;
+  cursor:pointer;
+  transition:.3s;
+}
+
+button:hover{background:#000}
+.footer{
+  margin-top:15px;
+  font-size:12px;
+  color:#888;
+}
+</style>
 </head>
 
 <body>
-  <h2>Admin Login</h2>
 
-  <input
-    id="email"
-    type="email"
-    placeholder="Email"
-    required
-  />
-  <br /><br />
+<div class="login-box">
+  <h2>🔐 ClassyCrafth Admin</h2>
+  <p>Login to manage orders & dashboard</p>
 
-  <input
-    id="password"
-    type="password"
-    placeholder="Password"
-    required
-  />
-  <br /><br />
+  <input id="email" type="email" placeholder="Admin email" required>
+  <input id="password" type="password" placeholder="Password" required>
 
   <button onclick="login()">Login</button>
 
-  <script>
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+  <div class="footer">© ClassyCrafth Admin Panel</div>
+</div>
 
-      // 🛑 Basic validation
-      if (!email || !password) {
-        alert("Email and password required");
-        return;
+<script>
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("Email and password required");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      "https://api.classycrafth.com/api/admin/auth/login",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       }
+    );
 
-      try {
-        const res = await fetch(
-          "https://garment-ecommerce-backend-production.up.railway.app/api/admin/auth/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          }
-        );
+    const data = await res.json();
 
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          alert(data.message || "Login failed");
-          return;
-        }
-
-        // ✅ Save token
-        localStorage.setItem("adminToken", data.token);
-
-        // ✅ Redirect to dashboard
-        window.location.href = "/admin/dashboard.html";
-      } catch (err) {
-        alert("Server error. Please try again.");
-        console.error(err);
-      }
+    if (!res.ok || !data.success) {
+      alert(data.message || "Login failed");
+      return;
     }
-  </script>
+
+    // ✅ Save token
+    localStorage.setItem("adminToken", data.token);
+
+    // ✅ Redirect
+    window.location.href = "/admin/dashboard.html";
+
+  } catch (err) {
+    alert("Server error. Please try again.");
+    console.error(err);
+  }
+}
+</script>
+
 </body>
 </html>

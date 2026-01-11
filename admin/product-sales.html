@@ -1,0 +1,36 @@
+<h2>📦 Product Wise Sales</h2>
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Product</th>
+      <th>Sold Qty</th>
+      <th>Total Revenue (₹)</th>
+    </tr>
+  </thead>
+  <tbody id="list"></tbody>
+</table>
+
+<script>
+async function loadSales(){
+  const res = await fetch("https://api.classycrafth.com/api/admin/product-sales",{
+    headers:{
+      "Authorization":"Bearer " + localStorage.getItem("adminToken")
+    }
+  });
+
+  const data = await res.json();
+
+  document.getElementById("list").innerHTML =
+    data.sales.map((p,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${p.productName}</td>
+        <td>${p.totalQty}</td>
+        <td>₹${p.totalRevenue}</td>
+      </tr>
+    `).join("");
+}
+
+loadSales();
+</script>

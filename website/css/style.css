@@ -1,0 +1,281 @@
+/* ===============================
+   GLOBAL
+================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  background: #f6f6f6;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* ===============================
+   NAVBAR
+================================ */
+.nav {
+  background: #111;
+  color: white;
+  padding: 15px 8%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.nav a {
+  color: white;
+  margin-left: 20px;
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.nav a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ===============================
+   HERO (PROFESSIONAL)
+================================ */
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: center;
+  gap: 40px;
+  padding: 80px 8%;
+  background: linear-gradient(120deg, #fafafa, #f1f1f1);
+}
+
+.hero-content h1 {
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 1.2;
+  margin-bottom: 15px;
+  color: #111;
+}
+
+.hero-content p {
+  font-size: 1.05rem;
+  color: #555;
+  max-width: 520px;
+  margin-bottom: 25px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 26px;
+  border-radius: 30px;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #111;
+  color: #fff;
+}
+
+.btn.secondary {
+  border: 2px solid #111;
+  color: #111;
+  background: transparent;
+}
+
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 14px;
+  color: #333;
+}
+
+.hero-image img {
+  width: 100%;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+}
+
+/* ===============================
+   PRODUCTS
+================================ */
+.products-section {
+  padding: 70px 8%;
+}
+
+.products-section h2 {
+  margin-bottom: 30px;
+  font-size: 32px;
+  color: #111;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+}
+
+.card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.card h3 {
+  margin: 10px 0 5px;
+  font-size: 16px;
+}
+
+.price {
+  color: #e91e63;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+/* Product button */
+.card .btn {
+  margin-top: 10px;
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: #111;
+  color: white;
+  border-radius: 22px;
+}
+
+/* ===============================
+   MOBILE FIXES
+================================ */
+@media(max-width:600px){
+  .nav { padding: 12px 5%; }
+  .products-section { padding: 50px 5%; }
+  .hero { padding: 60px 5%; }
+}
+
+/* ===============================
+   WHY CHOOSE US
+================================ */
+.why-section {
+  padding: 70px 8%;
+  background: linear-gradient(120deg, #fafafa, #f1f1f1);
+  text-align: center;
+}
+
+.why-section h2 {
+  font-size: 32px;
+  color: #111;
+}
+
+.why-section .sub {
+  color: #666;
+  margin: 8px 0 40px;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.why-card {
+  background: white;
+  padding: 30px 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+}
+
+.why-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+}
+
+.why-card span {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.why-card h3 {
+  margin-bottom: 8px;
+  color: #111;
+}
+
+.why-card p {
+  font-size: 14px;
+  color: #555;
+}
+
+/* ===============================
+   OFFER / DISCOUNT BANNER
+================================ */
+.offer-banner {
+  padding: 70px 8%;
+  background: linear-gradient(120deg, #111, #e91e63);
+  text-align: center;
+  color: white;
+  margin: 30px 0;
+}
+
+.offer-content h2 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  margin-bottom: 10px;
+}
+
+.offer-content p {
+  font-size: 1.05rem;
+  margin-bottom: 25px;
+  opacity: 0.9;
+}
+
+.offer-btn {
+  display: inline-block;
+  padding: 12px 34px;
+  border-radius: 30px;
+  background: white;
+  color: #111;
+  font-weight: bold;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: 0.3s;
+}
+
+.offer-btn:hover {
+  transform: scale(1.05);
+  background: #f1f1f1;
+}

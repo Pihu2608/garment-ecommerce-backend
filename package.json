@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
@@ -20,10 +20,5 @@
     "pdfkit": "^0.17.2",
     "razorpay": "^2.9.6",
     "twilio": "^5.11.2"
-    "main": "...",
-"scripts": {
-  "start": "....."
-}
-
   }
 }

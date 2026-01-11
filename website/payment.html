@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClassyCrafth – Payment</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    .pay-box {
+      max-width: 500px;
+      margin: 80px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .pay-btn {
+      margin-top: 20px;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 30px;
+      background: #e91e63;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <h2 class="logo">ClassyCrafth</h2>
+</nav>
+
+<div class="pay-box">
+  <h2>💳 Complete Your Payment</h2>
+  <p>Total Amount: ₹ <span id="amount">0</span></p>
+  <button class="pay-btn" onclick="payNow()">Pay Now</button>
+</div>
+
+<script src="js/payment.js"></script>
+</body>
+</html>

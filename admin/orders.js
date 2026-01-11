@@ -1,73 +1,82 @@
-const API_BASE =
-  "https://garment-ecommerce-backend-production.up.railway.app";
+const API = "/api/admin/orders";
+const token = localStorage.getItem("adminToken");
 
-const tableBody = document.querySelector("#ordersTable tbody");
+if(!token){
+  location.href = "login.html";
+}
 
-// ===============================
-// LOAD ORDERS
-// ===============================
-async function loadOrders() {
-  const res = await fetch(`${API_BASE}/api/admin/orders`);
-  const orders = await res.json();
+async function loadOrders(){
+  const q = document.getElementById("search").value;
+  const paymentStatus = document.getElementById("paymentFilter").value;
+  const status = document.getElementById("statusFilter").value;
 
-  tableBody.innerHTML = "";
+  let url = API + "?";
+  if(q) url += "q=" + q + "&";
+  if(paymentStatus) url += "paymentStatus=" + paymentStatus + "&";
+  if(status) url += "status=" + status;
 
-  orders.forEach((order) => {
-    const tr = document.createElement("tr");
+  const res = await fetch(url,{
+    headers:{ Authorization:"Bearer "+token }
+  });
 
-    const locked = order.isInvoiceFinal === true;
+  const data = await res.json();
+  renderOrders(data.orders || []);
+}
 
-    tr.innerHTML = `
-      <td>${order.companyName}</td>
-      <td>${order.phone}</td>
-      <td>₹ ${order.total}</td>
-      <td>
-        <select ${locked ? "disabled" : ""}>
-          <option ${order.status === "Pending" ? "selected" : ""}>Pending</option>
-          <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
-          <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
-          <option ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
-        </select>
-        ${locked ? "<br><small style='color:red'>🔒 Invoice Final</small>" : ""}
-      </td>
-      <td>
-        ${
-          locked
-            ? "<button disabled>Locked</button>"
-            : `<button onclick="updateStatus('${order._id}', this)">Update</button>`
-        }
-      </td>
+function renderOrders(orders){
+  const table = document.getElementById("ordersTable");
+  const mobile = document.getElementById("ordersMobile");
+
+  table.innerHTML = "";
+  mobile.innerHTML = "";
+
+  orders.forEach(o=>{
+    table.innerHTML += `
+      <tr>
+        <td>${o._id}</td>
+        <td>${o.customerName}</td>
+        <td>${o.phone}</td>
+        <td>₹${o.total}</td>
+        <td class="${o.paymentStatus==="PAID"?"paid":"pending"}">${o.paymentStatus}</td>
+        <td>${o.status}</td>
+        <td>
+          <select onchange="updateStatus('${o._id}',this.value)">
+            ${["PENDING","PROCESSING","DELIVERED","CANCELLED"].map(s=>
+              `<option ${o.status===s?"selected":""}>${s}</option>`
+            ).join("")}
+          </select>
+        </td>
+      </tr>
     `;
 
-    tableBody.appendChild(tr);
+    mobile.innerHTML += `
+      <div class="card">
+        <b>${o.customerName}</b> (${o.phone})<br/>
+        ₹${o.total} | <span class="${o.paymentStatus==="PAID"?"paid":"pending"}">${o.paymentStatus}</span><br/>
+        Status:
+        <select onchange="updateStatus('${o._id}',this.value)">
+          ${["PENDING","PROCESSING","DELIVERED","CANCELLED"].map(s=>
+            `<option ${o.status===s?"selected":""}>${s}</option>`
+          ).join("")}
+        </select>
+      </div>
+    `;
   });
 }
 
-// ===============================
-// UPDATE STATUS
-// ===============================
-async function updateStatus(orderId, btn) {
-  const row = btn.closest("tr");
-  const status = row.querySelector("select").value;
+async function updateStatus(id,status){
+  if(!confirm("Update order status?")) return;
 
-  btn.innerText = "Updating...";
-  btn.disabled = true;
-
-  const res = await fetch(
-    `${API_BASE}/api/admin/orders/${orderId}/status`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    }
-  );
-
-  const data = await res.json();
-
-  alert(data.message || "Updated");
+  await fetch("/api/admin/orders/"+id+"/status",{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:"Bearer "+token
+    },
+    body: JSON.stringify({ status })
+  });
 
   loadOrders();
 }
 
-// INITIAL LOAD
 loadOrders();

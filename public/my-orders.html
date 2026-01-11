@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Orders | ClassyCrafth</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box;font-family:Segoe UI,Arial,sans-serif}
+body{margin:0;background:#f4f6f8;color:#222}
+
+.header{
+  background:#111;color:#fff;padding:18px 8%;
+  font-size:20px;font-weight:bold
+}
+
+.container{
+  max-width:900px;margin:30px auto;padding:0 15px
+}
+
+h2{margin-bottom:5px}
+.sub{color:#666;margin-bottom:25px}
+
+.card{
+  background:#fff;border-radius:14px;
+  padding:18px;margin-bottom:18px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:15px
+}
+
+.left p{margin:6px 0;font-size:14px}
+.right{text-align:right}
+
+.badge{
+  display:inline-block;padding:6px 14px;border-radius:20px;
+  font-size:12px;font-weight:bold;margin-bottom:8px
+}
+
+.ORDER_PLACED{background:#eef3ff;color:#2f55ff}
+.SHIPPED{background:#fff4e5;color:#d47b00}
+.OUT_FOR_DELIVERY{background:#ffecec;color:#d63031}
+.DELIVERED{background:#e8fff0;color:#0a8f4c}
+
+.btn{
+  display:inline-block;padding:8px 16px;
+  border-radius:20px;background:#111;color:#fff;
+  text-decoration:none;font-size:13px
+}
+
+.logout{
+  background:#e91e63;color:#fff;border:none;
+  padding:6px 14px;border-radius:20px;cursor:pointer
+}
+
+.empty{
+  background:#fff;padding:30px;text-align:center;
+  border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,0.08)
+}
+
+@media(max-width:600px){
+  .card{flex-direction:column}
+  .right{text-align:left}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">🛒 ClassyCrafth – My Orders</div>
+
+<div class="container">
+  <h2>Your Orders</h2>
+  <p class="sub">Track and manage your recent purchases</p>
+
+  <button class="logout" onclick="logout()">Logout</button>
+
+  <div id="orders"></div>
+</div>
+
+<script>
+if(!localStorage.getItem("customerToken")){
+  location.href = "login.html";
+}
+
+async function loadOrders(){
+  const res = await fetch("https://api.classycrafth.com/api/customer/my-orders",{
+    headers:{
+      "Authorization":"Bearer " + localStorage.getItem("customerToken")
+    }
+  });
+
+  const data = await res.json();
+
+  if(!data.success){
+    alert("Session expired. Login again.");
+    localStorage.removeItem("customerToken");
+    location.href="login.html";
+    return;
+  }
+
+  if(!data.orders.length){
+    document.getElementById("orders").innerHTML =
+      `<div class="empty">No orders found</div>`;
+    return;
+  }
+
+  document.getElementById("orders").innerHTML =
+    data.orders.map(o=>`
+      <div class="card">
+        <div class="left">
+          <p><b>Order ID:</b> ${o._id}</p>
+          <p><b>Total:</b> ₹${o.total}</p>
+          <p><b>Placed:</b> ${new Date(o.createdAt).toLocaleString()}</p>
+        </div>
+
+        <div class="right">
+          <div class="badge ${o.trackingStatus}">${o.trackingStatus}</div><br>
+          <a class="btn" href="track.html">Track Order</a>
+        </div>
+      </div>
+    `).join("");
+}
+
+function logout(){
+  localStorage.removeItem("customerToken");
+  location.href = "login.html";
+}
+
+loadOrders();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClassyCrafth – Cart</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .cart-box {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .cart-item {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+    }
+
+    .cart-item img {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .cart-info {
+      flex: 1;
+    }
+
+    .qty {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .qty button {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #111;
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .remove {
+      color: red;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .total-box {
+      text-align: right;
+      margin-top: 20px;
+    }
+
+    .checkout-btn {
+      margin-top: 10px;
+      padding: 12px 25px;
+      border: none;
+      background: #e91e63;
+      color: white;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <h2 class="logo">ClassyCrafth</h2>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="cart.html">Cart 🛒</a>
+  </div>
+</nav>
+
+<div class="cart-box">
+  <h2>🛒 Your Cart</h2>
+  <div id="cartItems"></div>
+
+  <div class="total-box">
+    <h3>Total: ₹ <span id="total">0</span></h3>
+    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+  </div>
+</div>
+
+<script src="js/cart.js"></script>
+</body>
+</html>

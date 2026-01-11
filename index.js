@@ -43,6 +43,11 @@ app.get("/", (req, res) => {
   res.send("✅ ClassyCrafth backend is running...");
 });
 
+app.use("/api/customer", require("./routes/customerProfile"));
+app.use("/api/admin", require("./routes/adminDashboard"));
+
+
+
 /* ========== DATABASE ========== */
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))

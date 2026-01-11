@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ClassyCrafth – Checkout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    .checkout-box {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    h3 { margin-bottom: 10px; }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .summary {
+      background: #f7f7f7;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .place-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 30px;
+      background: #e91e63;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    @media(max-width:800px){
+      .checkout-box{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <h2 class="logo">ClassyCrafth</h2>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="cart.html">Cart 🛒</a>
+  </div>
+</nav>
+
+<div class="checkout-box">
+
+  <!-- LEFT -->
+  <div>
+    <h3>📋 Customer Details</h3>
+    <div id="loginNote" class="note"></div>
+
+    <input id="name" placeholder="Full Name" />
+    <input id="phone" placeholder="Phone Number" />
+    <input id="email" placeholder="Email (optional)" />
+    <textarea id="address" placeholder="Full Address"></textarea>
+
+    <button class="place-btn" onclick="placeOrder()">Place Order</button>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="summary">
+    <h3>🧾 Order Summary</h3>
+    <div id="items"></div>
+    <h4>Total: ₹ <span id="total">0</span></h4>
+  </div>
+
+</div>
+
+<script src="js/checkout.js"></script>
+
+<script>
+/* ===============================
+   AUTO-FILL CUSTOMER DATA
+================================ */
+async function autoFillCustomer() {
+  const token = localStorage.getItem("customerToken");
+
+  if (!token) {
+    document.getElementById("loginNote").innerHTML =
+      `Already have an account? <a href="login.html">Login</a> to auto-fill your details.`;
+    return;
+  }
+
+  try {
+    const res = await fetch("https://api.classycrafth.com/api/customer/me", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    const data = await res.json();
+    if (!data.success) return;
+
+    document.getElementById("name").value = data.user.name || "";
+    document.getElementById("phone").value = data.user.phone || "";
+    document.getElementById("email").value = data.user.email || "";
+
+    document.getElementById("loginNote").innerHTML =
+      `✅ Logged in as <b>${data.user.name}</b>`;
+  } catch (e) {
+    console.log("Auto-fill skipped");
+  }
+}
+
+autoFillCustomer();
+</script>
+
+</body>
+</html>

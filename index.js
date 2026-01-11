@@ -34,24 +34,21 @@ console.log("✅ adminOrders routes LOADED");
 app.use("/api/payment", require("./routes/payment.routes"));
 console.log("✅ payment routes LOADED");
 
-// ================= PRODUCTS (DEBUG FINAL) =================
+// Products
 console.log("👉 BEFORE products require");
-
 const productRoutes = require("./routes/productRoutes");
-
 console.log("👉 AFTER products require");
-
 app.use("/api/products", productRoutes);
 console.log("✅ products routes LOADED");
-// ==========================================================
+
+// Customer + Dashboard
+app.use("/api/customer", require("./routes/customerProfile"));
+app.use("/api/admin", require("./routes/adminDashboard"));
 
 /* ========== TEST ROUTE ========== */
 app.get("/", (req, res) => {
   res.send("✅ ClassyCrafth backend is running...");
 });
-
-app.use("/api/customer", require("./routes/customerProfile"));
-app.use("/api/admin", require("./routes/adminDashboard"));
 
 /* ========== DATABASE ========== */
 mongoose
@@ -59,8 +56,9 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.log("❌ Mongo error:", err.message));
 
-/* ========== SERVER ========== */
-const PORT = process.env.PORT || 5000;
+/* ========== SERVER (⚠️ ONLY ONE PORT) ========== */
+const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
   console.log("🚀 ClassyCrafth server running on port", PORT);
 });

@@ -10,6 +10,19 @@ console.log("✅ adminAuth routes LOADED");
    🔐 ADMIN LOGIN (ENV + BCRYPT)
    POST /api/admin/auth/login
 ================================ */
+
+router.get("/__debug_env", (req, res) => {
+  res.json({
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL || null,
+    ADMIN_PASSWORD_HASH_PRESENT: !!process.env.ADMIN_PASSWORD_HASH,
+    ADMIN_PASSWORD_HASH_LENGTH: process.env.ADMIN_PASSWORD_HASH
+      ? process.env.ADMIN_PASSWORD_HASH.length
+      : 0,
+    JWT_SECRET_PRESENT: !!process.env.JWT_SECRET
+  });
+});
+
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;

@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+console.log("🔥🔥🔥 ADMIN AUTH FILE LOADED 🔥🔥🔥");
+
+
 /* =========================
    🔐 ADMIN LOGIN (SUPER DEBUG)
 ========================= */

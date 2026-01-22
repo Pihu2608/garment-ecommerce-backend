@@ -1,63 +1,35 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 
-console.log("🔥 ADMIN AUTH CONTROLLER LOADED");
+console.log("🔥 ADMIN AUTH CONTROLLER LOADED (BYPASS MODE)");
 
 /* =========================
-   🔐 ADMIN LOGIN (FINAL)
+   🔐 ADMIN LOGIN (TEMP BYPASS)
 ========================= */
 exports.adminLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password required"
-      });
-    }
-
-    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD_HASH || !process.env.JWT_SECRET) {
-      console.error("❌ Admin ENV missing");
+    if (!process.env.JWT_SECRET) {
       return res.status(500).json({
         success: false,
-        message: "Server misconfiguration"
+        message: "JWT_SECRET missing"
       });
     }
 
-    // ✅ Email check
-    if (email !== process.env.ADMIN_EMAIL) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    // ✅ Password check
-    const match = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
-
-    if (!match) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    // ✅ JWT
+    // 🔓 DIRECT ADMIN TOKEN (NO CHECK)
     const token = jwt.sign(
-      { role: "admin", email },
+      { role: "admin", bypass: true },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
     return res.status(200).json({
       success: true,
-      message: "Admin login successful",
+      message: "Admin bypass login successful",
       token
     });
 
   } catch (err) {
-    console.error("ADMIN LOGIN ERROR:", err);
+    console.error("ADMIN BYPASS ERROR:", err);
     return res.status(500).json({
       success: false,
       message: "Server error"

@@ -1,4 +1,5 @@
-const API = "http://localhost:5000/api/products";
+const API = "https://garment-ecommerce-backend-production.up.railway.app/api/products";
+
 
 async function loadProducts() {
   const res = await fetch(API);

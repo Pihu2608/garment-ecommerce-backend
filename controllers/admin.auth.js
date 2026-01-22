@@ -7,15 +7,13 @@ console.log("🔥 ADMIN AUTH CONTROLLER LOADED");
    🔐 ADMIN LOGIN (FINAL)
 ========================= */
 exports.adminLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  return res.status(200).json({
+    force: true,
+    msg: "🔥 THIS FILE IS EXECUTING 🔥"
+  });
+};
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password required"
-      });
-    }
+
 
     if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD_HASH || !process.env.JWT_SECRET) {
       console.error("❌ Admin ENV missing");

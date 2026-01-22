@@ -7,13 +7,15 @@ console.log("🔥 ADMIN AUTH CONTROLLER LOADED");
    🔐 ADMIN LOGIN (FINAL)
 ========================= */
 exports.adminLogin = async (req, res) => {
-  return res.status(200).json({
-    force: true,
-    msg: "🔥 THIS FILE IS EXECUTING 🔥"
-  });
-};
+  try {
+    const { email, password } = req.body;
 
-
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password required"
+      });
+    }
 
     if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD_HASH || !process.env.JWT_SECRET) {
       console.error("❌ Admin ENV missing");
@@ -41,7 +43,7 @@ exports.adminLogin = async (req, res) => {
       });
     }
 
-    // ✅ Generate JWT
+    // ✅ JWT
     const token = jwt.sign(
       { role: "admin", email },
       process.env.JWT_SECRET,

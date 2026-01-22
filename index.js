@@ -10,6 +10,8 @@ console.log("🔥🔥 CLASSYCRAFTH PRODUCTION SERVER STARTING 🔥🔥");
 
 const app = express();
 
+app.set("trust proxy", 1); // ✅ VERY IMPORTANT FOR RAILWAY / PRODUCTION
+
 /* =========================
    🔐 SECURITY HARDENING
 ========================= */

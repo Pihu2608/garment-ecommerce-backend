@@ -1,84 +1,34 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 
 const router = express.Router();
 
-console.log("✅ adminAuth routes LOADED");
+console.log("🔥 ADMIN AUTH ROUTE LOADED (BYPASS)");
 
-/* ===============================
-   🔐 ADMIN LOGIN (ENV + BCRYPT)
-   POST /api/admin/auth/login
-================================ */
-
-router.get("/__debug_env", (req, res) => {
-  res.json({
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL || null,
-    ADMIN_PASSWORD_HASH_PRESENT: !!process.env.ADMIN_PASSWORD_HASH,
-    ADMIN_PASSWORD_HASH_LENGTH: process.env.ADMIN_PASSWORD_HASH
-      ? process.env.ADMIN_PASSWORD_HASH.length
-      : 0,
-    JWT_SECRET_PRESENT: !!process.env.JWT_SECRET
-  });
-});
-
-
-router.post("/login", async (req, res) => {
+router.post("/login", (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing credentials"
-      });
-    }
-
-    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD_HASH) {
-      console.error("❌ ADMIN env not configured");
+    if (!process.env.JWT_SECRET) {
       return res.status(500).json({
         success: false,
-        message: "Admin login not configured"
+        message: "JWT_SECRET missing"
       });
     }
 
-    // ✅ Email check
-    if (email !== String(process.env.ADMIN_EMAIL).trim()) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    // ✅ Password check (bcrypt)
-    const match = await bcrypt.compare(
-      password,
-      process.env.ADMIN_PASSWORD_HASH
-    );
-
-    if (!match) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    // ✅ create token
     const token = jwt.sign(
-      { role: "admin", email },
+      { role: "admin", bypass: true },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
-    res.json({
+    return res.status(200).json({
       success: true,
-      message: "Admin login successful",
+      message: "Admin bypass login successful",
       token
     });
 
   } catch (err) {
-    console.error("❌ Admin login error:", err);
-    res.status(500).json({
+    console.error("ADMIN ROUTE BYPASS ERROR:", err);
+    return res.status(500).json({
       success: false,
       message: "Server error"
     });
